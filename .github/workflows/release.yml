@@ -49,20 +49,20 @@ jobs:
       - name: Publish @tsc-run/core
         run: |
           cd packages/core
-          pnpm publish --tag ${{ steps.npm-tag.outputs.tag }} --access public
+          pnpm publish --tag ${{ steps.npm-tag.outputs.tag }} --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish @tsc-run/adapter-aws
         run: |
           cd packages/adapter-aws
-          pnpm publish --tag ${{ steps.npm-tag.outputs.tag }} --access public
+          pnpm publish --tag ${{ steps.npm-tag.outputs.tag }} --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish @tsc-run/cli
         run: |
           cd packages/cli
-          pnpm publish --tag ${{ steps.npm-tag.outputs.tag }} --access public
+          pnpm publish --tag ${{ steps.npm-tag.outputs.tag }} --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
