@@ -37,8 +37,7 @@ export async function loadConfig(configPath?: string) {
             platform: 'node',
             format: 'esm',
             write: false,
-            target: 'es2022',
-            external: ['@tsc-run/core']
+            target: 'es2022'
         });
         
         // Write to temp file and import

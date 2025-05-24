@@ -14,7 +14,11 @@
       "Bash(find:*)",
       "Bash(pnpm test:*)",
       "Bash(cat:*)",
-      "Bash(pnpm:*)"
+      "Bash(pnpm:*)",
+      "Bash(npm view:*)",
+      "Bash(npm dist-tag:*)",
+      "Bash(tsc-run:*)",
+      "Bash(../../packages/cli/dist/index.js build)"
     ],
     "deny": []
   }

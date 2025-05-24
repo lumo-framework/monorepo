@@ -1,4 +1,5 @@
 export default {
+  projectName: 'example',
   provider: 'aws' as const,
   region: 'us-east-1',
   routes: 'src/routes',
