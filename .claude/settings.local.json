@@ -18,7 +18,10 @@
       "Bash(npm view:*)",
       "Bash(npm dist-tag:*)",
       "Bash(tsc-run:*)",
-      "Bash(../../packages/cli/dist/index.js build)"
+      "Bash(../../packages/cli/dist/index.js build)",
+      "Bash(node:*)",
+      "Bash(ls:*)",
+      "Bash(npx tsc:*)"
     ],
     "deny": []
   }

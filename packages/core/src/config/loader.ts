@@ -5,6 +5,7 @@ import {existsSync} from 'fs';
 import {build} from 'esbuild';
 import {tmpdir} from 'os';
 import {join} from 'path';
+import fs from 'fs/promises';
 
 export async function loadConfig(configPath?: string) {
     // Try different config file names in order of preference
@@ -42,7 +43,6 @@ export async function loadConfig(configPath?: string) {
         
         // Write to temp file and import
         const tempFile = join(tmpdir(), `tsc-run-config-${Date.now()}.mjs`);
-        const fs = await import('fs/promises');
         await fs.writeFile(tempFile, result.outputFiles[0].text);
         moduleUrl = pathToFileURL(tempFile).href;
     } else {

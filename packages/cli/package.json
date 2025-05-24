@@ -1,6 +1,6 @@
 {
   "name": "@tsc-run/cli",
-  "version": "0.2.0-alpha.2",
+  "version": "0.2.0-alpha.3",
   "description": "Command-line interface for the tsc-run TypeScript serverless framework",
   "repository": {
     "type": "git",
@@ -10,7 +10,6 @@
   "homepage": "https://docs.tsc.run",
   "keywords": ["typescript", "serverless", "aws", "lambda", "cli"],
   "license": "MIT",
-  "type": "module",
   "main": "dist/index.js",
   "bin": {
     "tsc-run": "dist/index.js"
