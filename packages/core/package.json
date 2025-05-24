@@ -1,0 +1,32 @@
+{
+  "name": "@tsc-run/core",
+  "version": "0.1.0-alpha.1",
+  "description": "Core framework types and utilities for tsc-run TypeScript serverless framework",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tsc-run/cli.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://docs.tsc.run",
+  "keywords": ["typescript", "serverless", "aws", "lambda", "core"],
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/index.js",
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "echo \"No tests yet\"",
+    "lint": "echo \"No linting configured\"",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@aws-sdk/client-eventbridge": "^3.816.0",
+    "@aws-sdk/client-sqs": "^3.816.0",
+    "@types/node": "^22.15.21",
+    "zod": "^3.25.23"
+  }
+}

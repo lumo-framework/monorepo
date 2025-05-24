@@ -1,0 +1,24 @@
+{
+  "name": "tsc-run",
+  "version": "0.1.0-alpha.1",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "pnpm -r build",
+    "dev": "pnpm -r dev",
+    "test": "pnpm -r test",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tsc-run/monorepo.git"
+  },
+  "homepage": "https://docs.tsc.run",
+  "description": "TypeScript serverless framework that compiles routes and event subscribers into AWS Lambda functions",
+  "license": "MIT"
+}

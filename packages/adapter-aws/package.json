@@ -1,0 +1,36 @@
+{
+  "name": "@tsc-run/adapter-aws",
+  "version": "0.1.0-alpha.1",
+  "description": "AWS adapter with CDK constructs and Lambda adapters for tsc-run framework",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tsc-run/cli.git",
+    "directory": "packages/adapter-aws"
+  },
+  "homepage": "https://docs.tsc.run",
+  "keywords": ["typescript", "serverless", "aws", "lambda", "cdk"],
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/index.js",
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "echo \"No tests yet\"",
+    "lint": "echo \"No linting configured\"",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@tsc-run/core": "workspace:*",
+    "@tsc-run/cli": "workspace:*",
+    "aws-cdk-lib": "^2.0.0",
+    "constructs": "^10.0.0",
+    "aws-cdk": "^2.0.0",
+    "esbuild": "^0.25.4"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.0",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}
