@@ -8,7 +8,7 @@ export async function bundleRoute(entryFile: string, outFile: string) {
     platform: 'node',
     target: 'node18',
     format: 'cjs',
-    external: ['aws-sdk', '@tsc-run/core', 'path', 'os', 'crypto', 'util', 'events', 'stream', 'buffer'],
+    external: ['aws-sdk', 'path', 'os', 'crypto', 'util', 'events', 'stream', 'buffer'],
     logLevel: 'error' // Suppress warnings to clean up build output
   });
 }
