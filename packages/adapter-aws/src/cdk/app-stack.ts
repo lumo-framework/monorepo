@@ -25,7 +25,7 @@ export class AppStack extends Stack {
     super(scope, id, props);
 
     // Check if networking is enabled (NAT gateways > 0)
-    this.hasNetworking = (props.config.networking?.natGateways ?? 1) > 0;
+    this.hasNetworking = (props.config.networking?.natGateways ?? 0) > 0;
 
     // Import VPC resources only if networking is enabled
     if (this.hasNetworking) {

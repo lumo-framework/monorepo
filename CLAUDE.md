@@ -45,7 +45,12 @@ This is a monorepo for `tsc-run`, a TypeScript serverless framework that compile
 
 ### Key Concepts
 
-**Routes**: TypeScript files in `src/routes/` that export HTTP handler functions (GET, POST, etc.) using the core Request/Response types. The CLI scans these files and generates individual Lambda functions for each HTTP method.
+**File-based routing** tsc.run uses file-based routing where your directory structure defines the URL paths, and TypeScript files within those directories handle HTTP methods by exporting named handlers.
+
+How it works
+Directories = URL paths
+Files = HTTP method handlers
+Exports = GET, POST, PATCH, DELETE functions
 
 **Subscribers**: Event-driven functions that listen to EventBridge events. Configured in `tsc-run.config.ts` under `events.subscribers` and implemented as files that export a `listen` function.
 
@@ -53,7 +58,7 @@ This is a monorepo for `tsc-run`, a TypeScript serverless framework that compile
 
 ### Build Process
 
-1. CLI scans `src/routes/` for route handlers and generates Lambda wrapper code
+1. CLI scans `functions/api/` for route handlers and generates Lambda wrapper code
 2. CLI scans for subscriber files based on config and generates wrapper code  
 3. Each route/subscriber is bundled with esbuild into `dist/lambdas/`
 4. AWS adapter uses CDK to deploy Lambda functions and infrastructure

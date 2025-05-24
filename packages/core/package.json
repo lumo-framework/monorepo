@@ -1,6 +1,6 @@
 {
   "name": "@tsc-run/core",
-  "version": "0.2.0-alpha.5",
+  "version": "0.2.0-alpha.6",
   "description": "Core framework types and utilities for tsc-run TypeScript serverless framework",
   "repository": {
     "type": "git",

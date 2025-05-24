@@ -25,7 +25,6 @@ type SubscriberInfo = {
 }
 
 export async function scanRoutes(): Promise<RouteInfo[]> {
-    // Support both src/routes and functions/api patterns
     const searchPatterns = [
         'functions/api/**/*.ts'
     ];
