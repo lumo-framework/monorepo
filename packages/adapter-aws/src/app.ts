@@ -33,7 +33,7 @@ async function main() {
     env,
     projectName: config.projectName,
     environment: config.environment,
-    natGateways: config.networking?.natGateways,
+    natGateways: config.networking?.natGateways ?? 0,
   });
 
   // Create AppStack with networking dependencies

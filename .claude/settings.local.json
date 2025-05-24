@@ -21,7 +21,8 @@
       "Bash(../../packages/cli/dist/index.js build)",
       "Bash(node:*)",
       "Bash(ls:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(./dist/index.js --help)"
     ],
     "deny": []
   }

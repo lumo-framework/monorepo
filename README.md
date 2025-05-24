@@ -12,8 +12,8 @@ Visit [docs.tsc.run](https://docs.tsc.run) for complete installation and usage i
 # Install the CLI
 npm install -g @tsc-run/cli
 
-# Clone a new tsc.run project
-git clone https://github.com/tsc-run/tsc.run.git
+# Create a new project
+tsc-run new my-project
 ```
 
 ## Alpha Release

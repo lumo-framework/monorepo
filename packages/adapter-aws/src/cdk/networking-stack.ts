@@ -12,7 +12,7 @@ import {
 export interface NetworkingStackProps extends StackProps {
   projectName: string;
   environment: string;
-  natGateways?: number;
+  natGateways: number;
 }
 
 export interface NetworkingStackExports {
@@ -31,7 +31,7 @@ export class NetworkingStack extends Stack {
   constructor(scope: Construct, id: string, props: NetworkingStackProps) {
     super(scope, id, props);
 
-    const { projectName, environment, natGateways = 1 } = props;
+    const { projectName, environment, natGateways } = props;
 
     // Determine subnet type based on NAT gateway configuration
     const privateSubnetType = natGateways > 0 
