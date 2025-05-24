@@ -29,12 +29,18 @@ export class AppStack extends Stack {
 
     // Import VPC resources only if networking is enabled
     if (this.hasNetworking) {
-      this.vpc = Vpc.fromVpcAttributes(this, 'ImportedVpc', {
+      const vpcAttrs: any = {
         vpcId: props.networkingExports.vpcId,
         availabilityZones: props.networkingExports.availabilityZones,
-        privateSubnetIds: props.networkingExports.privateSubnetIds,
         publicSubnetIds: props.networkingExports.publicSubnetIds,
-      });
+      };
+      
+      // Only include private subnets if they exist (when natGateways > 0)
+      if (props.networkingExports.privateSubnetIds.length > 0) {
+        vpcAttrs.privateSubnetIds = props.networkingExports.privateSubnetIds;
+      }
+      
+      this.vpc = Vpc.fromVpcAttributes(this, 'ImportedVpc', vpcAttrs);
 
       this.lambdaSecurityGroup = SecurityGroup.fromSecurityGroupId(
         this,
