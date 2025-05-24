@@ -1,4 +1,4 @@
-import {config as coreConfig} from '@tsc-run/core';
+import {configSchema} from './schema.js';
 import {pathToFileURL} from "url";
 import {resolve} from 'path';
 import {existsSync} from 'fs';
@@ -51,5 +51,5 @@ export async function loadConfig(configPath?: string) {
     }
     
     const config = await import(moduleUrl);
-    return coreConfig.configSchema.parse(config.default);
+    return configSchema.parse(config.default);
 }

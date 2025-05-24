@@ -1,5 +1,5 @@
 import type { CommandModule } from 'yargs';
-import {loadConfig} from "../config/loader.js";
+import {loadConfig} from "@tsc-run/core";
 import {deploy} from "../deploy/deploy.js";
 import {formatDeploymentOutput} from "../deploy/util.js";
 import * as readline from 'readline';

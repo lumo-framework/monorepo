@@ -1,7 +1,7 @@
 import type {CommandModule} from 'yargs';
 import {expandRoutesToMethods, scanRoutes, scanSubscribers} from '../project/route-scanner.js';
 import {bundleRoute} from '../project/bundler.js';
-import {loadConfig} from '../config/loader.js';
+import {loadConfig} from '@tsc-run/core';
 import fs from 'fs/promises';
 import path from 'path';
 

@@ -22,7 +22,6 @@
   },
   "dependencies": {
     "@tsc-run/core": "workspace:*",
-    "@tsc-run/cli": "workspace:*",
     "aws-cdk-lib": "^2.0.0",
     "constructs": "^10.0.0",
     "aws-cdk": "^2.0.0",

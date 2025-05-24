@@ -27,6 +27,7 @@
     "@aws-sdk/client-eventbridge": "^3.816.0",
     "@aws-sdk/client-sqs": "^3.816.0",
     "@types/node": "^22.15.21",
+    "esbuild": "^0.25.4",
     "zod": "^3.25.23"
   }
 }

@@ -10,10 +10,6 @@ overrides:
 importers:
 
   .:
-    dependencies:
-      adapter-aws:
-        specifier: link:../../../Library/pnpm/global/5/node_modules/@tsc-rub/adapter-aws
-        version: link:../../../Library/pnpm/global/5/node_modules/@tsc-rub/adapter-aws
     devDependencies:
       typescript:
         specifier: ^5.0.0
@@ -21,9 +17,6 @@ importers:
 
   packages/adapter-aws:
     dependencies:
-      '@tsc-run/cli':
-        specifier: workspace:*
-        version: link:../cli
       '@tsc-run/core':
         specifier: workspace:*
         version: link:../core
@@ -95,6 +88,9 @@ importers:
       '@types/node':
         specifier: ^22.15.21
         version: 22.15.21
+      esbuild:
+        specifier: ^0.25.4
+        version: 0.25.4
       zod:
         specifier: ^3.25.23
         version: 3.25.23

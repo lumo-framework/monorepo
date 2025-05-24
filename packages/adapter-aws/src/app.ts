@@ -2,7 +2,7 @@ import { App } from 'aws-cdk-lib';
 import { AppStack } from './cdk/app-stack.js';
 import { NetworkingStack } from './cdk/networking-stack.js';
 import { DomainStack } from './cdk/domain-stack.js';
-import { loadConfig } from '@tsc-run/cli/dist/config/loader.js';
+import { loadConfig } from '@tsc-run/core';
 
 async function main() {
   const app = new App();
