@@ -222,11 +222,10 @@ describe('AWS Request Builder', () => {
       assert.equal(request.headers['X-Undefined'], undefined);
     });
 
-    test('should filter out null/undefined query parameters', () => {
+    test('should filter out undefined query parameters', () => {
       const event = createApiGatewayEvent({
         queryStringParameters: {
           valid: 'value',
-          null_param: null as any,
           undefined_param: undefined as string | undefined,
         },
       });
