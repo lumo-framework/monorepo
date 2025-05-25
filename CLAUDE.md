@@ -59,13 +59,14 @@ Exports = GET, POST, PATCH, DELETE functions
 ### Build Process
 
 1. CLI scans `functions/api/` for route handlers and generates Lambda wrapper code
-2. CLI scans for subscriber files based on config and generates wrapper code  
+2. CLI scans for subscriber files based on config and generates wrapper code
 3. Each route/subscriber is bundled with esbuild into `dist/lambdas/`
 4. AWS adapter uses CDK to deploy Lambda functions and infrastructure
 
 ### Development Workflow
 
 Route handlers use the core framework types:
+
 ```typescript
 import { response, statusCodes, type Request, Response } from '@tsc-run/core';
 

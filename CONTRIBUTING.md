@@ -15,6 +15,7 @@ The project consists of multiple repositories:
 ## Ways to Contribute
 
 ### 🐛 Bug Reports
+
 Found a bug in the framework or deployment process? Help us improve:
 
 1. Check existing issues to avoid duplicates.
@@ -24,6 +25,7 @@ Found a bug in the framework or deployment process? Help us improve:
 5. Include relevant logs from tsc.run or deployment output.
 
 ### 💡 Feature Requests
+
 Have an idea for improving the serverless development experience?
 
 1. Check if it's already been suggested.
@@ -31,6 +33,7 @@ Have an idea for improving the serverless development experience?
 3. Describe the serverless use case you're trying to solve.
 
 ### 📝 Documentation
+
 Documentation improvements help the entire serverless community:
 
 - Fix typos or unclear deployment instructions.
@@ -39,6 +42,7 @@ Documentation improvements help the entire serverless community:
 - Create tutorials for common serverless architectures.
 
 ### 🔧 Code Contributions
+
 Ready to contribute to tsc.run? Here's how:
 
 ## Getting Started
@@ -113,4 +117,4 @@ Thank you for contributing to tsc.run!
 
 ---
 
-*This contributing guide is a living document. If you have suggestions for improving it based on your serverless development experience, please let us know!*
+_This contributing guide is a living document. If you have suggestions for improving it based on your serverless development experience, please let us know!_

@@ -8,16 +8,25 @@
     "directory": "packages/core"
   },
   "homepage": "https://docs.tsc.run",
-  "keywords": ["typescript", "serverless", "aws", "lambda", "core"],
+  "keywords": [
+    "typescript",
+    "serverless",
+    "aws",
+    "lambda",
+    "core"
+  ],
   "license": "MIT",
   "type": "module",
   "main": "dist/index.js",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
     "test": "node --test dist/**/*.test.js",
-    "lint": "echo \"No linting configured\"",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {

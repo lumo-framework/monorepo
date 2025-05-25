@@ -17,8 +17,13 @@ async function main() {
   }
 
   // Generate stack name in format: <ProjectName><Env><Domain>
-  function generateStackName(projectName: string, environment: string, domain: string): string {
-    const toPascalCase = (str: string) => str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+  function generateStackName(
+    projectName: string,
+    environment: string,
+    domain: string
+  ): string {
+    const toPascalCase = (str: string) =>
+      str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
     return `${toPascalCase(projectName)}${toPascalCase(environment)}${toPascalCase(domain)}Stack`;
   }
 
@@ -28,7 +33,11 @@ async function main() {
   };
 
   // Create NetworkingStack first
-  const networkingStackName = generateStackName(config.projectName, config.environment, 'Networking');
+  const networkingStackName = generateStackName(
+    config.projectName,
+    config.environment,
+    'Networking'
+  );
   const networkingStack = new NetworkingStack(app, networkingStackName, {
     env,
     projectName: config.projectName,
@@ -37,7 +46,11 @@ async function main() {
   });
 
   // Create AppStack with networking dependencies
-  const appStackName = generateStackName(config.projectName, config.environment, 'App');
+  const appStackName = generateStackName(
+    config.projectName,
+    config.environment,
+    'App'
+  );
   const appStack = new AppStack(app, appStackName, {
     env,
     config,
@@ -49,7 +62,11 @@ async function main() {
 
   // Create DomainStack if domain configuration is provided
   if (config.domain) {
-    const domainStackName = generateStackName(config.projectName, config.environment, 'Domain');
+    const domainStackName = generateStackName(
+      config.projectName,
+      config.environment,
+      'Domain'
+    );
     const domainStack = new DomainStack(app, domainStackName, {
       env,
       config,

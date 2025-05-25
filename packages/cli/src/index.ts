@@ -11,5 +11,4 @@ yargs(hideBin(process.argv))
   .command(buildCommand)
   .command(deployCommand)
   .demandCommand()
-  .help()
-  .argv;
+  .help().argv;

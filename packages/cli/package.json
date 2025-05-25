@@ -8,18 +8,27 @@
     "directory": "packages/cli"
   },
   "homepage": "https://docs.tsc.run",
-  "keywords": ["typescript", "serverless", "aws", "lambda", "cli"],
+  "keywords": [
+    "typescript",
+    "serverless",
+    "aws",
+    "lambda",
+    "cli"
+  ],
   "license": "MIT",
   "main": "dist/index.js",
   "bin": {
     "tsc-run": "dist/index.js"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
     "test": "echo \"No tests yet\"",
-    "lint": "echo \"No linting configured\"",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
