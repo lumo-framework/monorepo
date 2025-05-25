@@ -1,8 +1,26 @@
 import { spawn } from 'child_process';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { setInterval, clearInterval } from 'timers';
+import type { config } from '@tsc-run/core';
 
-export async function deployToAws(config: any) {
+export interface DomainInfo {
+  name: string;
+  type: string;
+  setupInstructions?: string;
+  nameServers?: string[];
+  cnameTarget?: string;
+}
+
+export interface DeploymentResult {
+  url: string;
+  apiGatewayUrl: string | null;
+  customDomainUrl: string | null;
+  provider: string;
+  domain?: DomainInfo;
+}
+
+export async function deployToAws(config: config.Config) {
   try {
     await runBuildCommand();
 
@@ -16,12 +34,6 @@ export async function deployToAws(config: any) {
         str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
       return `${toPascalCase(projectName)}${toPascalCase(environment)}${toPascalCase(domain)}Stack`;
     }
-
-    const stackName = generateStackName(
-      config.projectName || 'MyProject',
-      config.environment || 'dev',
-      'Default'
-    );
 
     // Run CDK bootstrap if needed
     await runCdkCommand(['bootstrap']);
@@ -48,7 +60,7 @@ export async function deployToAws(config: any) {
     const appStackName = generateStackName(projectName, environment, 'App');
     const apiOutputPattern = `${toPascalCase(projectName)}${toPascalCase(environment)}RestAPIEndpoint[A-Z0-9]+`;
     let apiGatewayOutputs = result.match(
-      new RegExp(`${appStackName}\.${apiOutputPattern} = (https:\/\/[^\s]+)`)
+      new RegExp(`${appStackName}\\.${apiOutputPattern} = (https://[^\\s]+)`)
     );
 
     if (!apiGatewayOutputs) {
@@ -75,13 +87,13 @@ export async function deployToAws(config: any) {
         environment,
         'Domain'
       );
-      const customDomainPattern = `${domainStackName}\.CustomDomainUrl = (https:\/\/[^\s]+)`;
+      const customDomainPattern = `${domainStackName}\\.CustomDomainUrl = (https:\\/\\/[^\\s]+)`;
       let domainOutputs = result.match(new RegExp(customDomainPattern));
 
       if (!domainOutputs) {
         // Fallback: try to find the custom domain directly
         domainOutputs = result.match(
-          new RegExp(`CustomDomainUrl = (https:\/\/[^\s]+)`)
+          new RegExp(`CustomDomainUrl = (https:\\/\\/[^\\s]+)`)
         );
       }
 
@@ -96,7 +108,7 @@ export async function deployToAws(config: any) {
     // Primary URL (custom domain if available, otherwise API Gateway)
     const primaryUrl = customDomainUrl || apiGatewayUrl || 'URL not found';
 
-    const deploymentResult: any = {
+    const deploymentResult: DeploymentResult = {
       url: primaryUrl,
       apiGatewayUrl: apiGatewayUrl,
       customDomainUrl: customDomainUrl,
@@ -117,7 +129,7 @@ export async function deployToAws(config: any) {
           environment,
           'Domain'
         );
-        const nsPattern = `${domainStackName}\.SubdomainNameServers = ([^\s]+)`;
+        const nsPattern = `${domainStackName}\\.SubdomainNameServers = ([^\\s]+)`;
         const nsOutputs = result.match(new RegExp(nsPattern));
         if (nsOutputs) {
           deploymentResult.domain.nameServers = nsOutputs[1].split(',');
@@ -132,7 +144,7 @@ export async function deployToAws(config: any) {
           environment,
           'Domain'
         );
-        const cnamePattern = `${domainStackName}\.CNAMETarget = ([^\s]+)`;
+        const cnamePattern = `${domainStackName}\\.CNAMETarget = ([^\\s]+)`;
         const cnameOutputs = result.match(new RegExp(cnamePattern));
         if (cnameOutputs) {
           deploymentResult.domain.cnameTarget = cnameOutputs[1];
@@ -169,7 +181,7 @@ async function runCdkCommand(
 
     let stdout = '';
     let stderr = '';
-    let loadingInterval: NodeJS.Timeout | null = null;
+    let loadingInterval: ReturnType<typeof setInterval> | null = null;
 
     // Show loading indicator if enabled
     if (showProgress) {

@@ -7,9 +7,9 @@ interface NewCommandArgs {
   projectName: string;
 }
 
-export const newCommand: CommandModule<{}, NewCommandArgs> = {
+export const newCommand: CommandModule<object, NewCommandArgs> = {
   command: 'new <projectName>',
-  describe: 'Create a new tsc-run project from template',
+  describe: 'Create a new tsc-run project from the template.',
   builder: (yargs) => {
     return yargs.positional('projectName', {
       type: 'string',

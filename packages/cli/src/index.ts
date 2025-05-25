@@ -6,7 +6,7 @@ import { buildCommand } from './commands/build.js';
 import { deployCommand } from './commands/deploy.js';
 import { newCommand } from './commands/new.js';
 
-yargs(hideBin(process.argv))
+void yargs(hideBin(process.argv))
   .command(newCommand)
   .command(buildCommand)
   .command(deployCommand)

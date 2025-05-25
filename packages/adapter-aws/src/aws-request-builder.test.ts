@@ -194,7 +194,7 @@ describe('AWS Request Builder', () => {
 
     test('should handle missing headers gracefully', () => {
       const event = createApiGatewayEvent({
-        headers: null as any,
+        headers: {} as Record<string, string>,
       });
 
       const request = buildRequestFromApiGateway(event);
@@ -210,7 +210,7 @@ describe('AWS Request Builder', () => {
         headers: {
           Host: 'api.example.com',
           'X-Custom': 'value',
-          'X-Undefined': undefined as any,
+          'X-Undefined': undefined as string | undefined,
           'User-Agent': 'Test Browser',
         },
       });
@@ -227,7 +227,7 @@ describe('AWS Request Builder', () => {
         queryStringParameters: {
           valid: 'value',
           null_param: null as any,
-          undefined_param: undefined as any,
+          undefined_param: undefined as string | undefined,
         },
       });
 
@@ -243,7 +243,7 @@ describe('AWS Request Builder', () => {
       const event = createApiGatewayEvent({
         pathParameters: {
           id: '123',
-          undefined_param: undefined as any,
+          undefined_param: undefined as string | undefined,
         },
       });
 

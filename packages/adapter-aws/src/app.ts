@@ -2,13 +2,13 @@ import { App } from 'aws-cdk-lib';
 import { AppStack } from './cdk/app-stack.js';
 import { NetworkingStack } from './cdk/networking-stack.js';
 import { DomainStack } from './cdk/domain-stack.js';
-import { loadConfig } from '@tsc-run/core';
+import { loadConfig, type config } from '@tsc-run/core';
 
 async function main() {
   const app = new App();
 
   // Load tsc-run configuration
-  let config: any;
+  let config: config.Config;
   try {
     config = await loadConfig();
   } catch (error) {

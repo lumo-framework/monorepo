@@ -1,6 +1,7 @@
 {
   "name": "tsc-run",
   "version": "0.2.0-alpha.6",
+  "type": "module",
   "workspaces": [
     "packages/*"
   ],
@@ -14,6 +15,7 @@
     "format:check": "prettier --check ."
   },
   "devDependencies": {
+    "@eslint/js": "^9.27.0",
     "@typescript-eslint/eslint-plugin": "^8.32.1",
     "@typescript-eslint/parser": "^8.32.1",
     "eslint": "^9.27.0",

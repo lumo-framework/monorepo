@@ -1,10 +1,30 @@
-export function validateDeployment(config: any) {
+interface DeploymentConfig {
+  provider?: string;
+}
+
+interface DomainInfo {
+  name: string;
+  type: string;
+  setupInstructions?: string;
+  nameServers?: string[];
+  cnameTarget?: string;
+}
+
+interface DeploymentResult {
+  url?: string;
+  apiGatewayUrl?: string | null;
+  customDomainUrl?: string | null;
+  provider: string;
+  domain?: DomainInfo;
+}
+
+export function validateDeployment(config: DeploymentConfig) {
   if (!config.provider) {
     throw new Error('Provider is required for deployment');
   }
 }
 
-export function formatDeploymentOutput(result: any): string {
+export function formatDeploymentOutput(result: DeploymentResult): string {
   const lines: string[] = [];
 
   // Header

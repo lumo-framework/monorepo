@@ -41,7 +41,7 @@ export const buildCommand: CommandModule = {
       if (methodRoutes.length > 0) {
         console.log('\n🚀 \x1b[1mBuilding Routes:\x1b[0m');
         for (const [index, methodRoute] of methodRoutes.entries()) {
-          const { file, route, method, exportName } = methodRoute;
+          const { file, route, method } = methodRoute;
           const routeName =
             method === 'ALL' ? route : `${route}-${method.toLowerCase()}`;
 

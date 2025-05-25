@@ -6,8 +6,6 @@ export type Event<T = unknown> = {
 };
 
 export const emit = async (type: string, data: unknown) => {
-  const message: Event = { type, data };
-
   // Check if running in AWS Lambda environment with EventBridge
   if (
     typeof process !== 'undefined' &&

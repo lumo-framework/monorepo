@@ -1,6 +1,6 @@
 import { glob } from 'glob';
 import path from 'path';
-import { Project, SourceFile, ExportedDeclarations } from 'ts-morph';
+import { Project, SourceFile } from 'ts-morph';
 
 interface RouteInfo {
   file: string;
@@ -32,7 +32,7 @@ export async function scanRoutes(): Promise<RouteInfo[]> {
     try {
       const files = await glob(pattern);
       allFiles.push(...files);
-    } catch (error) {
+    } catch {
       // Pattern might not exist, continue
     }
   }
@@ -51,8 +51,8 @@ export async function scanRoutes(): Promise<RouteInfo[]> {
       if (routeInfo) {
         routes.push(routeInfo);
       }
-    } catch (error) {
-      console.warn(`Failed to analyze ${file}:`, error);
+    } catch {
+      console.warn(`Failed to analyze ${file}`);
     }
   }
 
@@ -67,7 +67,7 @@ export async function scanSubscribers(): Promise<SubscriberInfo[]> {
     try {
       const files = await glob(pattern);
       allFiles.push(...files);
-    } catch (error) {
+    } catch {
       // Pattern might not exist, continue
     }
   }
@@ -86,8 +86,8 @@ export async function scanSubscribers(): Promise<SubscriberInfo[]> {
       if (subscriberInfo) {
         subscribers.push(subscriberInfo);
       }
-    } catch (error) {
-      console.warn(`Failed to analyze ${file}:`, error);
+    } catch {
+      console.warn(`Failed to analyze ${file}`);
     }
   }
 

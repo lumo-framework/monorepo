@@ -3,7 +3,6 @@ import { Construct } from 'constructs';
 import {
   HostedZone,
   IHostedZone,
-  RecordType,
   ARecord,
   RecordTarget,
 } from 'aws-cdk-lib/aws-route53';
@@ -15,8 +14,10 @@ import {
 import { DomainName, RestApi } from 'aws-cdk-lib/aws-apigateway';
 import { ApiGatewayDomain } from 'aws-cdk-lib/aws-route53-targets';
 
+import type { config } from '@tsc-run/core';
+
 interface DomainStackProps extends StackProps {
-  config: any;
+  config: config.Config;
   api: RestApi;
 }
 
@@ -153,7 +154,10 @@ export class DomainStack extends Stack {
     }
   }
 
-  private validateDomainConfig(domainConfig: any): void {
+  private validateDomainConfig(domainConfig: config.Config['domain']): void {
+    if (!domainConfig) {
+      throw new Error('Domain configuration is required');
+    }
     const { name: domainName, type: domainType, certificate } = domainConfig;
 
     // Validate domain name format

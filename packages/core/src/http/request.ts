@@ -48,7 +48,7 @@ export const createRequest = (data: {
       }
       try {
         return JSON.parse(request.body);
-      } catch (error) {
+      } catch {
         throw new Error('Invalid JSON in request body');
       }
     },

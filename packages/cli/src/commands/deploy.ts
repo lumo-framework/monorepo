@@ -4,6 +4,8 @@ import { deploy } from '../deploy/deploy.js';
 import { formatDeploymentOutput } from '../deploy/util.js';
 import * as readline from 'readline';
 import { spawn } from 'child_process';
+import { Config } from '@tsc-run/core/dist/config';
+import { setTimeout, clearTimeout } from 'timers';
 
 async function checkDomainReady(domainName: string): Promise<boolean> {
   return new Promise((resolve) => {
@@ -15,7 +17,8 @@ async function checkDomainReady(domainName: string): Promise<boolean> {
       output += data.toString();
     });
 
-    child.on('close', (code) => {
+    child.on('close', () => {
+      clearTimeout(timeout);
       // If nslookup succeeds and finds an address, domain is likely ready
       const hasAddress =
         output.includes('Address:') && !output.includes("can't find");
@@ -23,14 +26,14 @@ async function checkDomainReady(domainName: string): Promise<boolean> {
     });
 
     // Timeout after 3 seconds
-    setTimeout(() => {
+    const timeout = setTimeout(() => {
       child.kill();
       resolve(false);
     }, 3000);
   });
 }
 
-async function promptForDomainSetup(config: any): Promise<boolean> {
+async function promptForDomainSetup(config: Config): Promise<boolean> {
   // Check if domain configuration exists and requires DNS setup
   if (!config.domain || config.domain.type === 'external') {
     return true; // No prompt needed

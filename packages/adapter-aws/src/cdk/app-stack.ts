@@ -1,6 +1,6 @@
-import { Stack, StackProps, Fn } from 'aws-cdk-lib';
+import { Stack, StackProps } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
-import { Function, Runtime, Code } from 'aws-cdk-lib/aws-lambda';
+import { Function, Runtime, Code, FunctionProps } from 'aws-cdk-lib/aws-lambda';
 import { RestApi, LambdaIntegration } from 'aws-cdk-lib/aws-apigateway';
 import { EventBus, IEventBus, Rule } from 'aws-cdk-lib/aws-events';
 import { LambdaFunction } from 'aws-cdk-lib/aws-events-targets';
@@ -14,9 +14,10 @@ import {
 import { readdirSync, existsSync } from 'fs';
 import { join } from 'path';
 import { NetworkingStackExports } from './networking-stack.js';
+import type { config } from '@tsc-run/core';
 
 interface AppStackProps extends StackProps {
-  config: any;
+  config: config.Config;
   networkingExports: NetworkingStackExports;
 }
 
@@ -35,7 +36,12 @@ export class AppStack extends Stack {
 
     // Import VPC resources only if networking is enabled
     if (this.hasNetworking) {
-      const vpcAttrs: any = {
+      const vpcAttrs: {
+        vpcId: string;
+        availabilityZones: string[];
+        publicSubnetIds: string[];
+        privateSubnetIds?: string[];
+      } = {
         vpcId: props.networkingExports.vpcId,
         availabilityZones: props.networkingExports.availabilityZones,
         publicSubnetIds: props.networkingExports.publicSubnetIds,
@@ -87,7 +93,7 @@ export class AppStack extends Stack {
 
     // Create Lambda functions and API routes
     for (const { route, method, filePath } of lambdaFiles) {
-      const lambdaConfig: any = {
+      let lambdaConfig: FunctionProps = {
         runtime: Runtime.NODEJS_22_X,
         handler: 'index.lambdaHandler',
         code: Code.fromAsset(filePath),
@@ -98,11 +104,14 @@ export class AppStack extends Stack {
 
       // Only attach VPC configuration if networking is enabled
       if (this.hasNetworking && this.vpc && this.lambdaSecurityGroup) {
-        lambdaConfig.vpc = this.vpc;
-        lambdaConfig.vpcSubnets = {
-          subnetType: SubnetType.PRIVATE_WITH_EGRESS,
+        lambdaConfig = {
+          ...lambdaConfig,
+          vpc: this.vpc,
+          vpcSubnets: {
+            subnetType: SubnetType.PRIVATE_WITH_EGRESS,
+          },
+          securityGroups: [this.lambdaSecurityGroup],
         };
-        lambdaConfig.securityGroups = [this.lambdaSecurityGroup];
       }
 
       const lambdaFunction = new Function(
@@ -120,7 +129,7 @@ export class AppStack extends Stack {
 
     // Create subscriber Lambda functions
     for (const { name, filePath } of subscriberFiles) {
-      const subscriberConfig: any = {
+      let subscriberConfig: FunctionProps = {
         runtime: Runtime.NODEJS_22_X,
         handler: 'index.lambdaHandler',
         code: Code.fromAsset(filePath),
@@ -128,11 +137,14 @@ export class AppStack extends Stack {
 
       // Only attach VPC configuration if networking is enabled
       if (this.hasNetworking && this.vpc && this.lambdaSecurityGroup) {
-        subscriberConfig.vpc = this.vpc;
-        subscriberConfig.vpcSubnets = {
-          subnetType: SubnetType.PRIVATE_WITH_EGRESS,
+        subscriberConfig = {
+          ...subscriberConfig,
+          vpc: this.vpc,
+          vpcSubnets: {
+            subnetType: SubnetType.PRIVATE_WITH_EGRESS,
+          },
+          securityGroups: [this.lambdaSecurityGroup],
         };
-        subscriberConfig.securityGroups = [this.lambdaSecurityGroup];
       }
 
       const subscriberFunction = new Function(
@@ -146,7 +158,7 @@ export class AppStack extends Stack {
       const eventTypes = subscriberEventConfig?.events || [];
 
       // Create EventBridge rule for this subscriber
-      let eventPattern: any = {
+      let eventPattern: { source: string[]; 'detail-type'?: string[] } = {
         source: ['tsc-run'], // Only listen to events from our application
       };
 
