@@ -6,7 +6,7 @@ import {
   IpAddresses,
   SecurityGroup,
   Port,
-  Peer
+  Peer,
 } from 'aws-cdk-lib/aws-ec2';
 
 export interface NetworkingStackProps extends StackProps {
@@ -85,8 +85,10 @@ export class NetworkingStack extends Stack {
     // Prepare exports
     this.exports = {
       vpcId: this.vpc.vpcId,
-      privateSubnetIds: this.vpc.privateSubnets.map(subnet => subnet.subnetId),
-      publicSubnetIds: this.vpc.publicSubnets.map(subnet => subnet.subnetId),
+      privateSubnetIds: this.vpc.privateSubnets.map(
+        (subnet) => subnet.subnetId
+      ),
+      publicSubnetIds: this.vpc.publicSubnets.map((subnet) => subnet.subnetId),
       lambdaSecurityGroupId: this.lambdaSecurityGroup.securityGroupId,
       availabilityZones: this.vpc.availabilityZones,
     };
@@ -101,16 +103,19 @@ export class NetworkingStack extends Stack {
     // Only export private subnet IDs if they exist
     if (this.vpc.privateSubnets.length > 0) {
       new CfnOutput(this, 'PrivateSubnetIds', {
-        value: this.vpc.privateSubnets.map(subnet => subnet.subnetId).join(','),
+        value: this.vpc.privateSubnets
+          .map((subnet) => subnet.subnetId)
+          .join(','),
         exportName: `${projectName}-${environment}-PrivateSubnetIds`,
         description: 'Private subnet IDs for Lambda functions',
       });
     }
 
     new CfnOutput(this, 'PublicSubnetIds', {
-      value: this.vpc.publicSubnets.map(subnet => subnet.subnetId).join(','),
+      value: this.vpc.publicSubnets.map((subnet) => subnet.subnetId).join(','),
       exportName: `${projectName}-${environment}-PublicSubnetIds`,
-      description: 'Public subnet IDs for load balancers or other public resources',
+      description:
+        'Public subnet IDs for load balancers or other public resources',
     });
 
     new CfnOutput(this, 'LambdaSecurityGroupId', {

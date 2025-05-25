@@ -15,6 +15,7 @@ The project consists of multiple repositories:
 ## Ways to Contribute
 
 ### 🐛 Bug Reports
+
 Found a bug in the framework or deployment process? Help us improve:
 
 1. Check existing issues to avoid duplicates.
@@ -24,6 +25,7 @@ Found a bug in the framework or deployment process? Help us improve:
 5. Include relevant logs from tsc.run or deployment output.
 
 ### 💡 Feature Requests
+
 Have an idea for improving the serverless development experience?
 
 1. Check if it's already been suggested.
@@ -31,6 +33,7 @@ Have an idea for improving the serverless development experience?
 3. Describe the serverless use case you're trying to solve.
 
 ### 📝 Documentation
+
 Documentation improvements help the entire serverless community:
 
 - Fix typos or unclear deployment instructions.
@@ -39,6 +42,7 @@ Documentation improvements help the entire serverless community:
 - Create tutorials for common serverless architectures.
 
 ### 🔧 Code Contributions
+
 Ready to contribute to tsc.run? Here's how:
 
 ## Getting Started
@@ -54,7 +58,29 @@ Ready to contribute to tsc.run? Here's how:
 
 ### Development Setup
 
-TODO
+1. **Clone the repository**:
+
+   ```bash
+   git clone https://github.com/tsc-run/monorepo.git
+   cd monorepo
+   ```
+
+2. **Install dependencies**:
+
+   ```bash
+   pnpm install
+   ```
+
+3. **Build all packages**:
+
+   ```bash
+   pnpm build
+   ```
+
+4. **Verify setup by running tests**:
+   ```bash
+   pnpm test
+   ```
 
 ### Multi-Repository Workflow
 
@@ -62,11 +88,75 @@ TODO
 
 ### Testing
 
-TODO
+We use a comprehensive testing strategy across the monorepo:
+
+#### Running Tests
+
+```bash
+# Run all tests across packages
+pnpm test
+
+# Run tests for a specific package
+cd packages/cli && pnpm test
+cd packages/core && pnpm test
+cd packages/adapter-aws && pnpm test
+```
+
+#### Code Quality
+
+```bash
+# Type checking
+pnpm typecheck
+
+# Linting
+pnpm lint
+
+# Code formatting
+pnpm format
+
+# Check formatting without changes
+pnpm format:check
+```
+
+#### Testing Your Changes
+
+1. **Unit tests**: Ensure your changes don't break existing functionality
+2. **Build verification**: Run `pnpm build` to ensure all packages compile
+3. **Integration testing**: Test CLI commands with a sample project
 
 ### Local Development
 
-TODO
+#### Development Workflow
+
+```bash
+# Build specific package during development
+cd packages/cli && pnpm build
+cd packages/core && pnpm build
+cd packages/adapter-aws && pnpm build
+```
+
+#### Testing CLI Commands Locally
+
+For testing the CLI with actual projects, you have two options:
+
+```bash
+# Build the CLI first
+pnpm build
+
+# Set environment variable to use local CLI
+export TSC_RUN_CLI_PATH=/absolute/path/to/cli/packages/cli/dist/index.js
+
+# Or use relative path from your test project
+export TSC_RUN_CLI_PATH=../path/to/cli/packages/cli/dist/index.js
+
+# Now test CLI commands
+./packages/cli/dist/index.js build
+./packages/cli/dist/index.js deploy
+```
+
+#### Working with Test Projects
+
+Use the `tests/gcp-sample/` directory or create your own test project to verify CLI functionality works end-to-end.
 
 ### Commit Messages
 
@@ -76,7 +166,29 @@ We follow [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/)
 
 ### Pull Request Process
 
-TODO
+1. **Before submitting**:
+
+   - Run `pnpm test` to ensure all tests pass
+   - Run `pnpm typecheck` to verify TypeScript compilation
+   - Run `pnpm lint` to check code style
+   - Run `pnpm format:check` to verify formatting
+
+2. **Create your pull request**:
+
+   - Use a descriptive title following conventional commits format
+   - Provide a clear description of what your changes do
+   - Reference any related issues
+
+3. **After submission**:
+
+   - Address any feedback from reviewers
+   - Ensure CI checks pass
+   - Be responsive to review comments
+
+4. **Merge requirements**:
+   - All tests must pass
+   - Code must be properly formatted and linted
+   - At least one approving review from a maintainer
 
 ## Community and Communication
 
@@ -113,4 +225,4 @@ Thank you for contributing to tsc.run!
 
 ---
 
-*This contributing guide is a living document. If you have suggestions for improving it based on your serverless development experience, please let us know!*
+_This contributing guide is a living document. If you have suggestions for improving it based on your serverless development experience, please let us know!_
