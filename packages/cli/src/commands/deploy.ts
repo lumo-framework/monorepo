@@ -1,10 +1,9 @@
 import type { CommandModule } from 'yargs';
-import { loadConfig } from '@tsc-run/core';
+import { loadConfig, config } from '@tsc-run/core';
 import { deploy } from '../deploy/deploy.js';
 import { formatDeploymentOutput } from '../deploy/util.js';
 import * as readline from 'readline';
 import { spawn } from 'child_process';
-import { Config } from '@tsc-run/core/dist/config';
 import { setTimeout, clearTimeout } from 'timers';
 
 async function checkDomainReady(domainName: string): Promise<boolean> {
@@ -33,7 +32,7 @@ async function checkDomainReady(domainName: string): Promise<boolean> {
   });
 }
 
-async function promptForDomainSetup(config: Config): Promise<boolean> {
+async function promptForDomainSetup(config: config.Config): Promise<boolean> {
   // Check if domain configuration exists and requires DNS setup
   if (!config.domain || config.domain.type === 'external') {
     return true; // No prompt needed

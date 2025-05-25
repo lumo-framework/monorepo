@@ -76,3 +76,23 @@ export async function GET(req: Request): Promise<Response> {
 ```
 
 The framework automatically generates AWS Lambda adapters that convert API Gateway events to the framework's Request/Response format.
+
+### Local Testing
+
+For contributors testing the CLI locally:
+
+```bash
+# Build all packages first
+pnpm build
+
+# Option 1: Use environment variable (recommended)
+export TSC_RUN_CLI_PATH=/absolute/path/to/cli/packages/cli/dist/index.js
+
+# Option 2: Use relative path from your test project
+export TSC_RUN_CLI_PATH=../path/to/cli/packages/cli/dist/index.js
+
+# Now deploy works with local CLI
+node /path/to/cli/packages/cli/dist/index.js deploy
+```
+
+Without the environment variable, the deploy command falls back to `npx tsc-run build` which requires the package to be published.

@@ -247,7 +247,20 @@ async function runCdkCommand(
 
 async function runBuildCommand(): Promise<void> {
   return new Promise((resolve, reject) => {
-    const child = spawn('npx', ['tsc-run', 'build'], {
+    let command: string;
+    let args: string[];
+
+    // Check for development CLI path override
+    const devCliPath = process.env.TSC_RUN_CLI_PATH;
+    if (devCliPath) {
+      command = 'node';
+      args = [devCliPath, 'build'];
+    } else {
+      command = 'npx';
+      args = ['tsc-run', 'build'];
+    }
+
+    const child = spawn(command, args, {
       stdio: 'inherit',
       cwd: process.cwd(),
     });
