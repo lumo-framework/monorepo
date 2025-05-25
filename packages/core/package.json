@@ -16,7 +16,7 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "test": "echo \"No tests yet\"",
+    "test": "node --test dist/**/*.test.js",
     "lint": "echo \"No linting configured\"",
     "typecheck": "tsc --noEmit"
   },

@@ -7,3 +7,4 @@ export {http, events, config};
 // Also export common functions at the top level for convenience
 export { defineConfig } from "./config/define-config.js";
 export { loadConfig } from "./config/loader.js";
+export { response } from "./http/response.js";
