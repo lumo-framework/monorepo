@@ -1,6 +1,6 @@
 {
   "name": "@tsc-run/cli",
-  "version": "0.2.0-alpha.6",
+  "version": "0.2.0-alpha.7",
   "description": "Command-line interface for the tsc-run TypeScript serverless framework",
   "repository": {
     "type": "git",
