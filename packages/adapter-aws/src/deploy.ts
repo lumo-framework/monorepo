@@ -22,8 +22,6 @@ export interface DeploymentResult {
 
 export async function deployToAws(config: config.Config) {
   try {
-    await runBuildCommand();
-
     // Generate stack name in format: <ProjectName><Env><Domain>
     function generateStackName(
       projectName: string,
@@ -240,36 +238,6 @@ async function runCdkCommand(
           console.error(stderr);
         }
         reject(new Error(`CDK command failed with code ${code}: ${stderr}`));
-      }
-    });
-  });
-}
-
-async function runBuildCommand(): Promise<void> {
-  return new Promise((resolve, reject) => {
-    let command: string;
-    let args: string[];
-
-    // Check for development CLI path override
-    const devCliPath = process.env.TSC_RUN_CLI_PATH;
-    if (devCliPath) {
-      command = 'node';
-      args = [devCliPath, 'build'];
-    } else {
-      command = 'npx';
-      args = ['tsc-run', 'build'];
-    }
-
-    const child = spawn(command, args, {
-      stdio: 'inherit',
-      cwd: process.cwd(),
-    });
-
-    child.on('close', (code) => {
-      if (code === 0) {
-        resolve();
-      } else {
-        reject(new Error(`Build command failed with code ${code}`));
       }
     });
   });
