@@ -15,6 +15,7 @@ import { readdirSync, existsSync } from 'fs';
 import { join } from 'path';
 import { NetworkingStackExports } from './networking-stack.js';
 import type { config } from '@tsc-run/core';
+import { toPascalCase } from '../utils.js';
 
 interface AppStackProps extends StackProps {
   config: config.Config;
@@ -62,8 +63,6 @@ export class AppStack extends Stack {
     }
 
     // Generate RestApi ID in format: <ProjectName><Env>RestAPI
-    const toPascalCase = (str: string) =>
-      str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
     const projectName = props.config.projectName || 'Unknown';
     const environment = props.config.environment || 'dev';
     const apiId = `${toPascalCase(projectName)}${toPascalCase(environment)}RestAPI`;

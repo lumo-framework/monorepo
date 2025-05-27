@@ -3,6 +3,7 @@ import { AppStack } from './cdk/app-stack.js';
 import { NetworkingStack } from './cdk/networking-stack.js';
 import { DomainStack } from './cdk/domain-stack.js';
 import { loadConfig, type config } from '@tsc-run/core';
+import { generateStackName } from './utils.js';
 
 async function main() {
   const app = new App();
@@ -17,15 +18,6 @@ async function main() {
   }
 
   // Generate stack name in format: <ProjectName><Env><Domain>
-  function generateStackName(
-    projectName: string,
-    environment: string,
-    domain: string
-  ): string {
-    const toPascalCase = (str: string) =>
-      str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-    return `${toPascalCase(projectName)}${toPascalCase(environment)}${toPascalCase(domain)}Stack`;
-  }
 
   const env = {
     account: process.env.CDK_DEFAULT_ACCOUNT,
