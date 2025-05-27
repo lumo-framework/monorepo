@@ -1,6 +1,6 @@
 {
   "name": "@tsc-run/adapter-aws",
-  "version": "0.2.0-alpha.8",
+  "version": "0.3.0-alpha.1",
   "description": "AWS adapter with CDK constructs and Lambda adapters for tsc-run framework",
   "repository": {
     "type": "git",
