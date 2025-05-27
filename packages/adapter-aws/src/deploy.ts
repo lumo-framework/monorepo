@@ -3,6 +3,7 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { setInterval, clearInterval } from 'timers';
 import type { config } from '@tsc-run/core';
+import { toPascalCase, generateStackName } from './utils.js';
 
 export interface DomainInfo {
   name: string;
@@ -20,19 +21,106 @@ export interface DeploymentResult {
   domain?: DomainInfo;
 }
 
+function extractApiGatewayUrl(
+  result: string,
+  projectName: string,
+  environment: string
+): string | null {
+  // Pattern 1: Standard stack output format
+  const appStackName = generateStackName(projectName, environment, 'App');
+  const apiOutputPattern = `${toPascalCase(projectName)}${toPascalCase(environment)}RestAPIEndpoint[A-Z0-9]+`;
+  let apiGatewayOutputs = result.match(
+    new RegExp(`${appStackName}\\.${apiOutputPattern} = (https://[^\\s]+)`)
+  );
+
+  if (!apiGatewayOutputs) {
+    // Pattern 2: Generic RestApi endpoint pattern
+    apiGatewayOutputs = result.match(
+      /RestAPI.*Endpoint.*? = (https:\/\/[^\s]+)/
+    );
+  }
+
+  if (!apiGatewayOutputs) {
+    // Pattern 3: Any https URL that looks like API Gateway
+    apiGatewayOutputs = result.match(
+      /(https:\/\/[a-z0-9]+\.execute-api\.[a-z0-9-]+\.amazonaws\.com[^\s]*)/
+    );
+  }
+
+  return apiGatewayOutputs ? apiGatewayOutputs[1] : null;
+}
+
+function extractCustomDomainUrl(
+  result: string,
+  config: config.Config,
+  projectName: string,
+  environment: string
+): string | null {
+  if (!config.domain) {
+    return null;
+  }
+
+  const domainStackName = generateStackName(projectName, environment, 'Domain');
+  const customDomainPattern = `${domainStackName}\\.CustomDomainUrl = (https:\\/\\/[^\\s]+)`;
+  let domainOutputs = result.match(new RegExp(customDomainPattern));
+
+  if (!domainOutputs) {
+    // Fallback: try to find the custom domain directly
+    domainOutputs = result.match(
+      new RegExp(`CustomDomainUrl = (https:\\/\\/[^\\s]+)`)
+    );
+  }
+
+  // Return actual CDK output if found, otherwise construct URL from config
+  if (domainOutputs) {
+    return domainOutputs[1];
+  }
+
+  // Fallback: construct URL from config if domain name is available
+  return config.domain.name ? `https://${config.domain.name}` : null;
+}
+
+function addDomainInfo(
+  deploymentResult: DeploymentResult,
+  result: string,
+  config: config.Config,
+  projectName: string,
+  environment: string
+): void {
+  if (!config.domain) {
+    return;
+  }
+
+  deploymentResult.domain = {
+    name: config.domain.name,
+    type: config.domain.type,
+  };
+
+  const domainStackName = generateStackName(projectName, environment, 'Domain');
+
+  // Add setup instructions for subdomain delegation
+  if (config.domain.type === 'subdomain') {
+    const nsPattern = `${domainStackName}\\.SubdomainNameServers = ([^\\s]+)`;
+    const nsOutputs = result.match(new RegExp(nsPattern));
+    if (nsOutputs) {
+      deploymentResult.domain.nameServers = nsOutputs[1].split(',');
+      deploymentResult.domain.setupInstructions = `Add these NS records for ${config.domain.name} in your parent domain's DNS`;
+    }
+  }
+
+  // Add external DNS setup instructions
+  if (config.domain.type === 'external') {
+    const cnamePattern = `${domainStackName}\\.CNAMETarget = ([^\\s]+)`;
+    const cnameOutputs = result.match(new RegExp(cnamePattern));
+    if (cnameOutputs) {
+      deploymentResult.domain.cnameTarget = cnameOutputs[1];
+      deploymentResult.domain.setupInstructions = `Create a CNAME record for ${config.domain.name} pointing to ${cnameOutputs[1]}`;
+    }
+  }
+}
+
 export async function deployToAws(config: config.Config) {
   try {
-    // Generate stack name in format: <ProjectName><Env><Domain>
-    function generateStackName(
-      projectName: string,
-      environment: string,
-      domain: string
-    ): string {
-      const toPascalCase = (str: string) =>
-        str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-      return `${toPascalCase(projectName)}${toPascalCase(environment)}${toPascalCase(domain)}Stack`;
-    }
-
     // Run CDK bootstrap if needed
     await runCdkCommand(['bootstrap']);
 
@@ -44,112 +132,34 @@ export async function deployToAws(config: config.Config) {
       '--all',
     ]);
 
+    const projectName = config.projectName;
+    const environment = config.environment;
+
     // Extract URLs from CDK output
-    const toPascalCase = (str: string) =>
-      str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-    const projectName = config.projectName || 'MyProject';
-    const environment = config.environment || 'dev';
-
-    // Extract API Gateway URL (always available)
-    // Try multiple patterns to find the API Gateway URL
-    let apiGatewayUrl = null;
-
-    // Pattern 1: Standard stack output format
-    const appStackName = generateStackName(projectName, environment, 'App');
-    const apiOutputPattern = `${toPascalCase(projectName)}${toPascalCase(environment)}RestAPIEndpoint[A-Z0-9]+`;
-    let apiGatewayOutputs = result.match(
-      new RegExp(`${appStackName}\\.${apiOutputPattern} = (https://[^\\s]+)`)
+    const apiGatewayUrl = extractApiGatewayUrl(
+      result,
+      projectName,
+      environment
     );
-
-    if (!apiGatewayOutputs) {
-      // Pattern 2: Generic RestApi endpoint pattern
-      apiGatewayOutputs = result.match(
-        /RestAPI.*Endpoint.*? = (https:\/\/[^\s]+)/
-      );
-    }
-
-    if (!apiGatewayOutputs) {
-      // Pattern 3: Any https URL that looks like API Gateway
-      apiGatewayOutputs = result.match(
-        /(https:\/\/[a-z0-9]+\.execute-api\.[a-z0-9-]+\.amazonaws\.com[^\s]*)/
-      );
-    }
-
-    apiGatewayUrl = apiGatewayOutputs ? apiGatewayOutputs[1] : null;
-
-    // Try to get custom domain URL (if domain is configured)
-    let customDomainUrl = null;
-    if (config.domain) {
-      const domainStackName = generateStackName(
-        projectName,
-        environment,
-        'Domain'
-      );
-      const customDomainPattern = `${domainStackName}\\.CustomDomainUrl = (https:\\/\\/[^\\s]+)`;
-      let domainOutputs = result.match(new RegExp(customDomainPattern));
-
-      if (!domainOutputs) {
-        // Fallback: try to find the custom domain directly
-        domainOutputs = result.match(
-          new RegExp(`CustomDomainUrl = (https:\\/\\/[^\\s]+)`)
-        );
-      }
-
-      if (!domainOutputs && config.domain.name) {
-        // If we have the domain name, construct the URL
-        customDomainUrl = `https://${config.domain.name}`;
-      } else if (domainOutputs) {
-        customDomainUrl = domainOutputs[1];
-      }
-    }
+    const customDomainUrl = extractCustomDomainUrl(
+      result,
+      config,
+      projectName,
+      environment
+    );
 
     // Primary URL (custom domain if available, otherwise API Gateway)
     const primaryUrl = customDomainUrl || apiGatewayUrl || 'URL not found';
 
     const deploymentResult: DeploymentResult = {
       url: primaryUrl,
-      apiGatewayUrl: apiGatewayUrl,
-      customDomainUrl: customDomainUrl,
+      apiGatewayUrl,
+      customDomainUrl,
       provider: 'aws',
     };
 
     // Add domain-specific information if domain is configured
-    if (config.domain) {
-      deploymentResult.domain = {
-        name: config.domain.name,
-        type: config.domain.type,
-      };
-
-      // Add setup instructions for subdomain delegation
-      if (config.domain.type === 'subdomain') {
-        const domainStackName = generateStackName(
-          projectName,
-          environment,
-          'Domain'
-        );
-        const nsPattern = `${domainStackName}\\.SubdomainNameServers = ([^\\s]+)`;
-        const nsOutputs = result.match(new RegExp(nsPattern));
-        if (nsOutputs) {
-          deploymentResult.domain.nameServers = nsOutputs[1].split(',');
-          deploymentResult.domain.setupInstructions = `Add these NS records for ${config.domain.name} in your parent domain's DNS`;
-        }
-      }
-
-      // Add external DNS setup instructions
-      if (config.domain.type === 'external') {
-        const domainStackName = generateStackName(
-          projectName,
-          environment,
-          'Domain'
-        );
-        const cnamePattern = `${domainStackName}\\.CNAMETarget = ([^\\s]+)`;
-        const cnameOutputs = result.match(new RegExp(cnamePattern));
-        if (cnameOutputs) {
-          deploymentResult.domain.cnameTarget = cnameOutputs[1];
-          deploymentResult.domain.setupInstructions = `Create a CNAME record for ${config.domain.name} pointing to ${cnameOutputs[1]}`;
-        }
-      }
-    }
+    addDomainInfo(deploymentResult, result, config, projectName, environment);
 
     return deploymentResult;
   } catch (error) {
