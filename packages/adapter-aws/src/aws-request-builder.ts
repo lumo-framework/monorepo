@@ -1,14 +1,6 @@
 import type { APIGatewayProxyEvent } from 'aws-lambda';
-import type { http } from '@tsc-run/core';
-import {
-  createRequest,
-  parseCookies,
-  parseQuery,
-} from '@tsc-run/core/dist/http/request.js';
+import { http } from '@tsc-run/core';
 
-/**
- * Builds a tsc-run Request object from an AWS API Gateway proxy event
- */
 export const buildRequestFromApiGateway = (
   event: APIGatewayProxyEvent
 ): http.Request => {
@@ -48,14 +40,14 @@ export const buildRequestFromApiGateway = (
   // Extract client IP from various possible headers
   const ip = extractClientIp(headers);
 
-  return createRequest({
+  return http.createRequest({
     method: event.httpMethod,
     url,
     path: event.path,
-    query: parseQuery(queryString),
+    query: http.parseQuery(queryString),
     params,
     headers,
-    cookies: parseCookies(headers['Cookie']),
+    cookies: http.parseCookies(headers['Cookie']),
     ip,
     userAgent: headers['User-Agent'] || '',
     body: event.body || undefined,
