@@ -71,12 +71,13 @@ function extractCustomDomainUrl(
     );
   }
 
-  if (!domainOutputs && config.domain.name) {
-    // If we have the domain name, construct the URL
-    return `https://${config.domain.name}`;
+  // Return actual CDK output if found, otherwise construct URL from config
+  if (domainOutputs) {
+    return domainOutputs[1];
   }
 
-  return domainOutputs ? domainOutputs[1] : null;
+  // Fallback: construct URL from config if domain name is available
+  return config.domain.name ? `https://${config.domain.name}` : null;
 }
 
 function addDomainInfo(
