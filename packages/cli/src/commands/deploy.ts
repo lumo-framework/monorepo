@@ -5,6 +5,7 @@ import { formatDeploymentOutput } from '../deploy/util.js';
 import * as readline from 'readline';
 import { spawn } from 'child_process';
 import { setTimeout, clearTimeout } from 'timers';
+import fs from 'fs/promises';
 
 async function checkDomainReady(domainName: string): Promise<boolean> {
   return new Promise((resolve) => {
@@ -123,6 +124,16 @@ export const deployCommand: CommandModule = {
     try {
       console.log('🔧 Loading configuration...');
       const config = await loadConfig();
+
+      // Check if build exists before attempting deployment
+      try {
+        await fs.access('dist/lambdas');
+      } catch {
+        console.error('\n❌ \x1b[1m\x1b[31mNo build found!\x1b[0m');
+        console.error('\x1b[33mYou need to build your project before deploying.\x1b[0m');
+        console.error('\x1b[36mRun: tsc-run build\x1b[0m\n');
+        process.exit(1);
+      }
 
       // Show domain setup prompt if needed (unless --force is used)
       if (!argv.force) {
