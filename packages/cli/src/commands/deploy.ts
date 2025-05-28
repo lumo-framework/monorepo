@@ -56,22 +56,22 @@ async function promptForDomainSetup(config: config.Config): Promise<boolean> {
   if (domainType === 'subdomain') {
     console.log(`🌐 Subdomain: \x1b[1m${domainName}\x1b[0m`);
     console.log(
-      '\n⚠️  \x1b[1m\x1b[33mIMPORTANT:\x1b[0m After deployment, you will need to:'
+      '\n⚠️  \x1b[1m\x1b[33mIMPORTANT:\x1b[0m During deployment, you will need to:'
     );
     console.log(
-      '   1. Copy the NS (Name Server) records from the deployment output'
+      '   1. Copy the NS (Name Server) records from the deployment output or during deployment'
     );
     console.log(
-      "   2. Add these NS records to your parent domain's DNS settings"
+      "   2. Add these NS records to your domain's DNS settings"
     );
-    console.log('   3. Wait for DNS propagation (can take up to 48 hours)');
+    console.log('   3. Wait for DNS propagation (may take a few minutes)');
     console.log(
       '   4. SSL certificate will be automatically validated via DNS once NS records are active'
     );
   } else if (domainType === 'hosted-zone') {
     console.log(`🌐 Domain: \x1b[1m${domainName}\x1b[0m`);
     console.log(
-      '\n⚠️  \x1b[1m\x1b[33mIMPORTANT:\x1b[0m After deployment, you will need to:'
+      '\n⚠️  \x1b[1m\x1b[33mIMPORTANT:\x1b[0m During deployment, you will need to:'
     );
     console.log(
       "   1. Update your domain's name servers to point to AWS Route 53"
