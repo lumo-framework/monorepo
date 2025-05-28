@@ -55,9 +55,9 @@ export const newCommand: CommandModule<object, NewCommandArgs> = {
       // Remove documentation files that aren't needed in new projects
       const filesToRemove = [
         'CODE_OF_CONDUCT.md',
-        'CONTRIBUTING.md', 
+        'CONTRIBUTING.md',
         'SECURITY.md',
-        'LICENSE'
+        'LICENSE',
       ];
 
       for (const file of filesToRemove) {

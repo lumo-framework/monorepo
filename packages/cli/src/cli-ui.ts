@@ -14,7 +14,7 @@ export interface LogMethods {
   boxed(message: string): void;
   progressStep(label: string, done: boolean): void;
   spinner<T>(label: string, fn: () => Promise<T>): Promise<T>;
-  table(rows: Record<string, any>[]): void;
+  table(rows: Record<string, unknown>[]): void;
   prompt: typeof prompts;
   banner(text: string): void;
 }
@@ -40,11 +40,13 @@ const heading = (title: string): void => {
 };
 
 const boxed = (message: string): void => {
-  console.log(boxen(message, {
-    padding: 1,
-    borderStyle: 'round',
-    borderColor: 'cyan'
-  }));
+  console.log(
+    boxen(message, {
+      padding: 1,
+      borderStyle: 'round',
+      borderColor: 'cyan',
+    })
+  );
 };
 
 const progressStep = (label: string, done: boolean): void => {
@@ -64,7 +66,7 @@ const spinner = async <T>(label: string, fn: () => Promise<T>): Promise<T> => {
   }
 };
 
-const table = (rows: Record<string, any>[]): void => {
+const table = (rows: Record<string, unknown>[]): void => {
   if (rows.length === 0) {
     console.log(chalk.dim('No data to display'));
     return;
@@ -72,12 +74,12 @@ const table = (rows: Record<string, any>[]): void => {
 
   const headers = Object.keys(rows[0]);
   const tableInstance = new Table({
-    head: headers.map(h => chalk.bold(h)),
-    style: { head: [], border: [] }
+    head: headers.map((h) => chalk.bold(h)),
+    style: { head: [], border: [] },
   });
 
-  rows.forEach(row => {
-    tableInstance.push(headers.map(header => String(row[header] ?? '')));
+  rows.forEach((row) => {
+    tableInstance.push(headers.map((header) => String(row[header] ?? '')));
   });
 
   console.log(tableInstance.toString());
@@ -87,7 +89,7 @@ const banner = (text: string): void => {
   try {
     const rendered = figlet.textSync(text, { horizontalLayout: 'default' });
     console.log(chalk.cyan(rendered));
-  } catch (err) {
+  } catch {
     console.log(chalk.bold.cyan(text));
   }
 };
@@ -103,5 +105,5 @@ export const log: LogMethods = {
   spinner,
   table,
   prompt: prompts,
-  banner
+  banner,
 };

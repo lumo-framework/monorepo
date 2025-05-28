@@ -1,3 +1,5 @@
+import { log } from '../cli-ui.js';
+
 interface DeploymentConfig {
   provider?: string;
 }
@@ -24,83 +26,77 @@ export function validateDeployment(config: DeploymentConfig) {
   }
 }
 
-export function formatDeploymentOutput(result: DeploymentResult): string {
-  const lines: string[] = [];
-
-  // Header
-  lines.push('\n🚀 \x1b[1m\x1b[32mDeployment Successful!\x1b[0m\n');
+export function formatDeploymentOutput(result: DeploymentResult): void {
+  console.log();
+  log.success('🚀 Deployment Successful!');
+  console.log();
 
   // API URLs
   if (result.customDomainUrl) {
-    lines.push(
-      `📡 \x1b[1mCustom Domain:\x1b[0m \x1b[36m${result.customDomainUrl}\x1b[0m`
-    );
+    log.info(`📡 Custom Domain: ${result.customDomainUrl}`);
     if (result.apiGatewayUrl) {
-      lines.push(
-        `🔗 \x1b[1mAPI Gateway:\x1b[0m \x1b[90m${result.apiGatewayUrl}\x1b[0m`
-      );
+      console.log(`🔗 API Gateway: ${result.apiGatewayUrl}`);
     }
   } else if (result.apiGatewayUrl) {
-    lines.push(
-      `📡 \x1b[1mAPI URL:\x1b[0m \x1b[36m${result.apiGatewayUrl}\x1b[0m`
-    );
+    log.info(`📡 API URL: ${result.apiGatewayUrl}`);
   } else {
     const displayUrl =
       result.url === 'URL not found'
-        ? '\x1b[33mCheck CloudFormation outputs for API Gateway URL\x1b[0m'
+        ? 'Check CloudFormation outputs for API Gateway URL'
         : result.url;
-    lines.push(`📡 \x1b[1mAPI URL:\x1b[0m \x1b[36m${displayUrl}\x1b[0m`);
+    log.info(`📡 API URL: ${displayUrl}`);
   }
-  lines.push(`🔧 \x1b[1mProvider:\x1b[0m ${result.provider.toUpperCase()}`);
+  console.log(`🔧 Provider: ${result.provider.toUpperCase()}`);
 
   // Domain configuration info
   if (result.domain) {
-    lines.push('\n🌐 \x1b[1mDomain Configuration:\x1b[0m');
-    lines.push(
-      `   \x1b[1mDomain:\x1b[0m \x1b[36mhttps://${result.domain.name}\x1b[0m`
-    );
-    lines.push(`   \x1b[1mType:\x1b[0m ${result.domain.type}`);
+    console.log();
+    log.heading('🌐 Domain Configuration');
+    console.log(`   Domain: https://${result.domain.name}`);
+    console.log(`   Type: ${result.domain.type}`);
 
     // DNS Setup Instructions
     if (result.domain.setupInstructions) {
-      lines.push('\n⚙️  \x1b[1m\x1b[33mSetup Required:\x1b[0m');
+      console.log();
+      log.warn('⚙️ Setup Required:');
 
       // Certificate validation notice for subdomains
       if (result.domain.type === 'subdomain') {
-        lines.push('\n   \x1b[1m📧 Certificate Validation:\x1b[0m');
-        lines.push(
+        console.log();
+        console.log('   📧 Certificate Validation:');
+        console.log(
           '   Check your email for AWS certificate validation messages'
         );
-        lines.push(
-          '   \x1b[33m💡 Validate the certificate first, then set up DNS\x1b[0m'
-        );
+        log.warn('   💡 Validate the certificate first, then set up DNS');
       }
 
-      lines.push(`\n   \x1b[1m🌐 DNS Configuration:\x1b[0m`);
-      lines.push(`   ${result.domain.setupInstructions}`);
+      console.log();
+      console.log('   🌐 DNS Configuration:');
+      console.log(`   ${result.domain.setupInstructions}`);
 
       if (result.domain.nameServers) {
-        lines.push('\n   \x1b[1mName Servers to add:\x1b[0m');
+        console.log();
+        console.log('   Name Servers to add:');
         result.domain.nameServers.forEach((ns: string, index: number) => {
-          lines.push(`   ${index + 1}. ${ns.trim()}`);
+          console.log(`   ${index + 1}. ${ns.trim()}`);
         });
-        lines.push(
-          '\n   \x1b[33m💡 Add these NS records to your parent domain after validating certificate\x1b[0m'
+        console.log();
+        log.warn(
+          '   💡 Add these NS records to your parent domain after validating certificate'
         );
       }
 
       if (result.domain.cnameTarget) {
-        lines.push(
-          `\n   \x1b[1mCNAME Target:\x1b[0m ${result.domain.cnameTarget}`
-        );
-        lines.push(
-          '   \x1b[33m💡 Create this CNAME record in your external DNS provider\x1b[0m'
+        console.log();
+        console.log(`   CNAME Target: ${result.domain.cnameTarget}`);
+        log.warn(
+          '   💡 Create this CNAME record in your external DNS provider'
         );
       }
     }
   }
 
-  lines.push('\n✨ \x1b[1mYour API is ready!\x1b[0m\n');
-
-  return lines.join('\n');
+  console.log();
+  log.success('✨ Your API is ready!');
+  console.log();
 }
