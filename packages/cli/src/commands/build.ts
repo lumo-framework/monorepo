@@ -6,6 +6,7 @@ import {
 } from '../project/route-scanner.js';
 import { bundleRoute } from '../project/bundler.js';
 import { loadConfig } from '@tsc-run/core';
+import { log } from '@tsc-run/utils';
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -14,7 +15,8 @@ export const buildCommand: CommandModule = {
   describe: 'Build the project',
   handler: async () => {
     try {
-      console.log('🔧 \x1b[1mBuilding project...\x1b[0m\n');
+      log.heading('Building project...');
+      console.log();
 
       const config = await loadConfig();
 
@@ -26,12 +28,13 @@ export const buildCommand: CommandModule = {
       const subscribers = await scanSubscribers();
 
       // Show summary
-      console.log('📊 \x1b[1mBuild Summary:\x1b[0m');
-      console.log(`   📡 Routes: \x1b[36m${methodRoutes.length}\x1b[0m`);
-      console.log(`   📨 Subscribers: \x1b[36m${subscribers.length}\x1b[0m\n`);
+      log.heading('Build Summary');
+      log.info(`Routes: ${methodRoutes.length}`);
+      log.info(`Subscribers: ${subscribers.length}`);
+      console.log();
 
       // Clean and create dist directory
-      console.log('🧹 Cleaning build directory...');
+      log.info('Cleaning build directory...');
       await fs.rm('dist', { recursive: true, force: true });
       await fs.mkdir('dist', { recursive: true });
       await fs.mkdir('dist/lambdas', { recursive: true });
@@ -40,77 +43,85 @@ export const buildCommand: CommandModule = {
       // Get external modules from config
       const externalModules = config.build?.exclude || [];
 
-      // Build routes
-      if (methodRoutes.length > 0) {
-        console.log('\n🚀 \x1b[1mBuilding Routes:\x1b[0m');
-        for (const [index, methodRoute] of methodRoutes.entries()) {
+      // Build all functions in parallel
+      const totalFunctions = methodRoutes.length + subscribers.length;
+      if (totalFunctions > 0) {
+        console.log();
+        log.heading(`Building ${totalFunctions} Lambda Functions`);
+
+        // Create build tasks for routes and subscribers
+        const buildTasks: Promise<void>[] = [];
+
+        // Add route build tasks
+        methodRoutes.forEach((methodRoute) => {
           const { file, route, method } = methodRoute;
           const routeName =
             method === 'ALL' ? route : `${route}-${method.toLowerCase()}`;
-
-          process.stdout.write(
-            `   ${index + 1}/${methodRoutes.length} \x1b[33m${routeName}\x1b[0m `
+          buildTasks.push(
+            buildFunction('route', routeName, file, method, externalModules)
           );
+        });
 
-          // Generate wrapper file
-          const wrapperPath = await generateLambdaWrapper(file, method);
-
-          // Create directory for this Lambda
-          const lambdaDir = `dist/lambdas${routeName}`;
-          await fs.mkdir(lambdaDir, { recursive: true });
-
-          // Bundle the wrapper
-          const bundlePath = `${lambdaDir}/index.js`;
-          await bundleRoute(wrapperPath, bundlePath, externalModules);
-
-          // Clean up temporary wrapper
-          await fs.unlink(wrapperPath);
-
-          console.log('\x1b[32m✓\x1b[0m');
-        }
-      }
-
-      // Build subscribers
-      if (subscribers.length > 0) {
-        console.log('\n📨 \x1b[1mBuilding Subscribers:\x1b[0m');
-        for (const [index, subscriber] of subscribers.entries()) {
+        // Add subscriber build tasks
+        subscribers.forEach((subscriber) => {
           const { file, name } = subscriber;
-
-          process.stdout.write(
-            `   ${index + 1}/${subscribers.length} \x1b[33m${name}\x1b[0m `
+          buildTasks.push(
+            buildFunction('subscriber', name, file, 'listen', externalModules)
           );
+        });
 
-          // Generate wrapper file
-          const wrapperPath = await generateSubscriberWrapper(file);
-
-          // Create directory for this Lambda
-          const lambdaDir = `dist/lambdas/subscribers/${name}`;
-          await fs.mkdir(lambdaDir, { recursive: true });
-
-          // Bundle the wrapper
-          const bundlePath = `${lambdaDir}/index.js`;
-          await bundleRoute(wrapperPath, bundlePath, externalModules);
-
-          // Clean up temporary wrapper
-          await fs.unlink(wrapperPath);
-
-          console.log('\x1b[32m✓\x1b[0m');
-        }
+        // Execute all builds in parallel with progress tracking
+        await log.spinner(
+          `Building ${totalFunctions} functions...`,
+          async () => {
+            await Promise.all(buildTasks);
+          }
+        );
       }
 
-      console.log('\n✨ \x1b[1m\x1b[32mBuild completed successfully!\x1b[0m');
-      console.log(
-        `📦 Generated ${methodRoutes.length + subscribers.length} Lambda functions in \x1b[36mdist/lambdas/\x1b[0m\n`
+      console.log();
+      log.success('Build completed successfully!');
+      log.info(
+        `Generated ${methodRoutes.length + subscribers.length} Lambda functions in dist/lambdas/`
       );
+      console.log();
     } catch (error) {
-      console.error('\n❌ \x1b[1m\x1b[31mBuild Failed!\x1b[0m');
-      console.error(
-        `\x1b[31m${error instanceof Error ? error.message : String(error)}\x1b[0m\n`
-      );
+      console.log();
+      log.error('Build Failed!');
+      log.error(error instanceof Error ? error.message : String(error));
+      console.log();
       process.exit(1);
     }
   },
 };
+
+async function buildFunction(
+  type: 'route' | 'subscriber',
+  name: string,
+  file: string,
+  method: string,
+  externalModules: string[]
+): Promise<void> {
+  // Generate wrapper file
+  const wrapperPath =
+    type === 'route'
+      ? await generateLambdaWrapper(file, method)
+      : await generateSubscriberWrapper(file);
+
+  // Create directory for this Lambda
+  const lambdaDir =
+    type === 'route'
+      ? `dist/lambdas${name}`
+      : `dist/lambdas/subscribers/${name}`;
+  await fs.mkdir(lambdaDir, { recursive: true });
+
+  // Bundle the wrapper
+  const bundlePath = `${lambdaDir}/index.js`;
+  await bundleRoute(wrapperPath, bundlePath, externalModules);
+
+  // Clean up temporary wrapper
+  await fs.unlink(wrapperPath);
+}
 
 async function generateLambdaWrapper(
   routeFile: string,
@@ -123,7 +134,9 @@ import {${method} as handler} from '${path.resolve(routeFile)}';
 export const lambdaHandler = lambdaAdapter(handler);
 `;
 
-  const wrapperPath = `dist/temp-${path.basename(routeFile, '.ts')}-wrapper.ts`;
+  const timestamp = Date.now();
+  const random = Math.random().toString(36).substring(2, 8);
+  const wrapperPath = `dist/temp-${path.basename(routeFile, '.ts')}-${method}-${timestamp}-${random}-wrapper.ts`;
   await fs.writeFile(wrapperPath, wrapperContent);
   return wrapperPath;
 }
@@ -138,7 +151,9 @@ import {listen} from '${path.resolve(subscriberFile)}';
 export const lambdaHandler = subscriberAdapter(listen);
 `;
 
-  const wrapperPath = `dist/temp-${path.basename(subscriberFile, '.ts')}-subscriber-wrapper.ts`;
+  const timestamp = Date.now();
+  const random = Math.random().toString(36).substring(2, 8);
+  const wrapperPath = `dist/temp-${path.basename(subscriberFile, '.ts')}-subscriber-${timestamp}-${random}-wrapper.ts`;
   await fs.writeFile(wrapperPath, wrapperContent);
   return wrapperPath;
 }

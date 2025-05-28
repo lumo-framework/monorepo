@@ -3,6 +3,7 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { setInterval, clearInterval } from 'timers';
 import type { config } from '@tsc-run/core';
+import type { LogMethods } from '@tsc-run/utils';
 import { toPascalCase, generateStackName } from './utils.js';
 
 export interface DomainInfo {
@@ -119,18 +120,26 @@ function addDomainInfo(
   }
 }
 
-export async function deployToAws(config: config.Config) {
+export async function deployToAws(config: config.Config, logger?: LogMethods) {
   try {
     // Run CDK bootstrap if needed
-    await runCdkCommand(['bootstrap']);
+    if (logger) {
+      await logger.spinner('🔧 Bootstrapping CDK', () =>
+        runCdkCommand(['bootstrap'], false)
+      );
+    } else {
+      await runCdkCommand(['bootstrap']);
+    }
 
     // Deploy the stack
-    const result = await runCdkCommand([
-      'deploy',
-      '--require-approval',
-      'never',
-      '--all',
-    ]);
+    const result = logger
+      ? await logger.spinner('☁️ Deploying infrastructure', () =>
+          runCdkCommand(
+            ['deploy', '--require-approval', 'never', '--all'],
+            false
+          )
+        )
+      : await runCdkCommand(['deploy', '--require-approval', 'never', '--all']);
 
     const projectName = config.projectName;
     const environment = config.environment;
@@ -163,7 +172,12 @@ export async function deployToAws(config: config.Config) {
 
     return deploymentResult;
   } catch (error) {
-    console.error('CDK deployment failed:', error);
+    if (logger) {
+      logger.error('CDK deployment failed');
+      logger.error(error instanceof Error ? error.message : String(error));
+    } else {
+      console.error('CDK deployment failed:', error);
+    }
     throw error;
   }
 }
@@ -172,6 +186,8 @@ async function runCdkCommand(
   args: string[],
   showProgress: boolean = true
 ): Promise<string> {
+  // showProgress = true: use built-in spinner and show CDK output
+  // showProgress = false: suppress all output (external spinner handles progress)
   return new Promise((resolve, reject) => {
     // Get the path to the adapter's built CDK app
     const __filename = fileURLToPath(import.meta.url);
@@ -209,16 +225,16 @@ async function runCdkCommand(
 
     child.stdout?.on('data', (data) => {
       stdout += data.toString();
-      // Don't write to stdout when showing progress indicator
-      if (!showProgress) {
+      // Only show CDK output when using built-in progress indicator
+      if (showProgress) {
         process.stdout.write(data);
       }
     });
 
     child.stderr?.on('data', (data) => {
       stderr += data.toString();
-      // Don't write to stderr when showing progress indicator
-      if (!showProgress) {
+      // Only show CDK errors when using built-in progress indicator
+      if (showProgress) {
         process.stderr.write(data);
       }
     });
@@ -230,11 +246,11 @@ async function runCdkCommand(
         const operationName = args.includes('bootstrap')
           ? 'Bootstrap'
           : 'Deploy';
-        if (code === 0) {
+        if (code === 0 && showProgress) {
           process.stdout.write(
             `\r✅ ${operationName} completed successfully\n`
           );
-        } else {
+        } else if (code !== 0 && showProgress) {
           process.stdout.write(`\r❌ ${operationName} failed\n`);
         }
       }
@@ -243,7 +259,7 @@ async function runCdkCommand(
         resolve(stdout);
       } else {
         // Show error output when deployment fails
-        if (stderr.trim()) {
+        if (stderr.trim() && showProgress) {
           console.error('\n📋 Error details:');
           console.error(stderr);
         }

@@ -45,12 +45,28 @@ export const newCommand: CommandModule<object, NewCommandArgs> = {
         }
       );
 
-      // Remove .git directory from the cloned template
+      // Remove .git directory and documentation files from the cloned template
       console.log('🧹 Cleaning up template...');
       await fs.rm(path.join(projectName, '.git'), {
         recursive: true,
         force: true,
       });
+
+      // Remove documentation files that aren't needed in new projects
+      const filesToRemove = [
+        'CODE_OF_CONDUCT.md',
+        'CONTRIBUTING.md',
+        'SECURITY.md',
+        'LICENSE',
+      ];
+
+      for (const file of filesToRemove) {
+        try {
+          await fs.rm(path.join(projectName, file), { force: true });
+        } catch {
+          // Ignore if file doesn't exist
+        }
+      }
 
       // Change to project directory and install dependencies
       console.log('📋 Installing dependencies...');

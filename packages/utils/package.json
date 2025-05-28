@@ -1,25 +1,22 @@
 {
-  "name": "@tsc-run/cli",
+  "name": "@tsc-run/utils",
   "version": "0.3.0-alpha.1",
-  "description": "Command-line interface for the tsc-run TypeScript serverless framework",
+  "description": "Shared utilities for tsc-run packages",
   "repository": {
     "type": "git",
     "url": "https://github.com/tsc-run/cli.git",
-    "directory": "packages/cli"
+    "directory": "packages/utils"
   },
   "homepage": "https://docs.tsc.run",
   "keywords": [
     "typescript",
     "serverless",
-    "aws",
-    "lambda",
+    "utils",
     "cli"
   ],
   "license": "MIT",
+  "type": "module",
   "main": "dist/index.js",
-  "bin": {
-    "tsc-run": "dist/index.js"
-  },
   "files": [
     "dist"
   ],
@@ -32,18 +29,17 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@tsc-run/adapter-aws": "workspace:*",
-    "@tsc-run/core": "workspace:*",
-    "@tsc-run/utils": "workspace:*",
-    "esbuild": "^0.25.4",
-    "glob": "^11.0.2",
-    "ts-morph": "^26.0.0",
-    "yargs": "^17.0.0",
-    "zod": "^3.22.0"
+    "boxen": "^8.0.1",
+    "chalk": "^5.4.1",
+    "cli-table3": "^0.6.5",
+    "figlet": "^1.8.1",
+    "ora": "^8.2.0",
+    "prompts": "^2.4.2"
   },
   "devDependencies": {
+    "@types/figlet": "^1.7.0",
     "@types/node": "^22.15.21",
-    "@types/yargs": "^17.0.0",
+    "@types/prompts": "^2.4.9",
     "typescript": "^5.0.0"
   }
 }
