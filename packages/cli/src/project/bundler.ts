@@ -1,6 +1,21 @@
 import { build } from 'esbuild';
 
-export async function bundleRoute(entryFile: string, outFile: string) {
+export async function bundleRoute(
+  entryFile: string,
+  outFile: string,
+  externalModules: string[] = []
+) {
+  const defaultExternal = [
+    'aws-sdk',
+    'path',
+    'os',
+    'crypto',
+    'util',
+    'events',
+    'stream',
+    'buffer',
+  ];
+
   await build({
     entryPoints: [entryFile],
     bundle: true,
@@ -8,16 +23,7 @@ export async function bundleRoute(entryFile: string, outFile: string) {
     platform: 'node',
     target: 'node18',
     format: 'cjs',
-    external: [
-      'aws-sdk',
-      'path',
-      'os',
-      'crypto',
-      'util',
-      'events',
-      'stream',
-      'buffer',
-    ],
+    external: [...defaultExternal, ...externalModules],
     logLevel: 'error', // Suppress warnings to clean up build output
   });
 }

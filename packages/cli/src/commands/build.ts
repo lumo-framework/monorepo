@@ -16,7 +16,7 @@ export const buildCommand: CommandModule = {
     try {
       console.log('🔧 \x1b[1mBuilding project...\x1b[0m\n');
 
-      await loadConfig();
+      const config = await loadConfig();
 
       // Scan for route files
       const routes = await scanRoutes();
@@ -36,6 +36,9 @@ export const buildCommand: CommandModule = {
       await fs.mkdir('dist', { recursive: true });
       await fs.mkdir('dist/lambdas', { recursive: true });
       await fs.mkdir('dist/lambdas/subscribers', { recursive: true });
+
+      // Get external modules from config
+      const externalModules = config.build?.exclude || [];
 
       // Build routes
       if (methodRoutes.length > 0) {
@@ -58,7 +61,7 @@ export const buildCommand: CommandModule = {
 
           // Bundle the wrapper
           const bundlePath = `${lambdaDir}/index.js`;
-          await bundleRoute(wrapperPath, bundlePath);
+          await bundleRoute(wrapperPath, bundlePath, externalModules);
 
           // Clean up temporary wrapper
           await fs.unlink(wrapperPath);
@@ -86,7 +89,7 @@ export const buildCommand: CommandModule = {
 
           // Bundle the wrapper
           const bundlePath = `${lambdaDir}/index.js`;
-          await bundleRoute(wrapperPath, bundlePath);
+          await bundleRoute(wrapperPath, bundlePath, externalModules);
 
           // Clean up temporary wrapper
           await fs.unlink(wrapperPath);
