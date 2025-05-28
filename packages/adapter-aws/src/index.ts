@@ -7,4 +7,3 @@ export {
   type NetworkingStackProps,
   type NetworkingStackExports,
 } from './cdk/networking-stack.js';
-export type { Logger } from './deploy.js';

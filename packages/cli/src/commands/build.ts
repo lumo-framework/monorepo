@@ -6,7 +6,7 @@ import {
 } from '../project/route-scanner.js';
 import { bundleRoute } from '../project/bundler.js';
 import { loadConfig } from '@tsc-run/core';
-import { log } from '../cli-ui.js';
+import { log } from '@tsc-run/utils';
 import fs from 'fs/promises';
 import path from 'path';
 

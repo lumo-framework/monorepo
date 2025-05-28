@@ -2,7 +2,7 @@ import type { CommandModule } from 'yargs';
 import { loadConfig, config } from '@tsc-run/core';
 import { deploy } from '../deploy/deploy.js';
 import { formatDeploymentOutput } from '../deploy/util.js';
-import { log } from '../cli-ui.js';
+import { log } from '@tsc-run/utils';
 import * as readline from 'readline';
 import { spawn } from 'child_process';
 import { setTimeout, clearTimeout } from 'timers';

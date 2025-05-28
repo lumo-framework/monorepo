@@ -29,14 +29,14 @@
     "lint:fix": "eslint src --ext .ts --fix",
     "typecheck": "tsc --noEmit"
   },
-  "devDependencies": {
-    "typescript": "^5.0.0"
-  },
   "dependencies": {
     "@aws-sdk/client-eventbridge": "^3.816.0",
     "@aws-sdk/client-sqs": "^3.816.0",
     "@types/node": "^22.15.21",
     "esbuild": "^0.25.4",
     "zod": "^3.25.23"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
   }
 }

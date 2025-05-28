@@ -1,4 +1,4 @@
-import { log } from '../cli-ui.js';
+import { log } from '@tsc-run/utils';
 
 interface DeploymentConfig {
   provider?: string;

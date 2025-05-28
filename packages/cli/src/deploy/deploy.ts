@@ -1,7 +1,7 @@
 import type { config } from '@tsc-run/core';
-import type { Logger } from '@tsc-run/adapter-aws';
+import type { LogMethods } from '@tsc-run/utils';
 
-export async function deploy(config: config.Config, logger?: Logger) {
+export async function deploy(config: config.Config, logger?: LogMethods) {
   switch (config.provider) {
     case 'aws': {
       const { deployToAws } = await import('@tsc-run/adapter-aws');

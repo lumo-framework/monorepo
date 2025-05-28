@@ -37,6 +37,9 @@ importers:
       '@tsc-run/core':
         specifier: workspace:*
         version: link:../core
+      '@tsc-run/utils':
+        specifier: workspace:*
+        version: link:../utils
       aws-cdk:
         specifier: ^2.0.0
         version: 2.1016.1
@@ -68,30 +71,15 @@ importers:
       '@tsc-run/core':
         specifier: workspace:*
         version: link:../core
-      boxen:
-        specifier: ^8.0.1
-        version: 8.0.1
-      chalk:
-        specifier: ^5.4.1
-        version: 5.4.1
-      cli-table3:
-        specifier: ^0.6.5
-        version: 0.6.5
+      '@tsc-run/utils':
+        specifier: workspace:*
+        version: link:../utils
       esbuild:
         specifier: ^0.25.4
         version: 0.25.4
-      figlet:
-        specifier: ^1.8.1
-        version: 1.8.1
       glob:
         specifier: ^11.0.2
         version: 11.0.2
-      ora:
-        specifier: ^8.2.0
-        version: 8.2.0
-      prompts:
-        specifier: ^2.4.2
-        version: 2.4.2
       ts-morph:
         specifier: ^26.0.0
         version: 26.0.0
@@ -102,15 +90,9 @@ importers:
         specifier: ^3.22.0
         version: 3.25.23
     devDependencies:
-      '@types/figlet':
-        specifier: ^1.7.0
-        version: 1.7.0
       '@types/node':
         specifier: ^22.15.21
         version: 22.15.21
-      '@types/prompts':
-        specifier: ^2.4.9
-        version: 2.4.9
       '@types/yargs':
         specifier: ^17.0.0
         version: 17.0.33
@@ -136,6 +118,40 @@ importers:
         specifier: ^3.25.23
         version: 3.25.23
     devDependencies:
+      typescript:
+        specifier: ^5.0.0
+        version: 5.8.3
+
+  packages/utils:
+    dependencies:
+      boxen:
+        specifier: ^8.0.1
+        version: 8.0.1
+      chalk:
+        specifier: ^5.4.1
+        version: 5.4.1
+      cli-table3:
+        specifier: ^0.6.5
+        version: 0.6.5
+      figlet:
+        specifier: ^1.8.1
+        version: 1.8.1
+      ora:
+        specifier: ^8.2.0
+        version: 8.2.0
+      prompts:
+        specifier: ^2.4.2
+        version: 2.4.2
+    devDependencies:
+      '@types/figlet':
+        specifier: ^1.7.0
+        version: 1.7.0
+      '@types/node':
+        specifier: ^22.15.21
+        version: 22.15.21
+      '@types/prompts':
+        specifier: ^2.4.9
+        version: 2.4.9
       typescript:
         specifier: ^5.0.0
         version: 5.8.3

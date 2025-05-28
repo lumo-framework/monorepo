@@ -3,15 +3,8 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { setInterval, clearInterval } from 'timers';
 import type { config } from '@tsc-run/core';
+import type { LogMethods } from '@tsc-run/utils';
 import { toPascalCase, generateStackName } from './utils.js';
-
-export interface Logger {
-  success(message: string): void;
-  error(message: string): void;
-  warn(message: string): void;
-  info(message: string): void;
-  spinner<T>(label: string, fn: () => Promise<T>): Promise<T>;
-}
 
 export interface DomainInfo {
   name: string;
@@ -127,7 +120,7 @@ function addDomainInfo(
   }
 }
 
-export async function deployToAws(config: config.Config, logger?: Logger) {
+export async function deployToAws(config: config.Config, logger?: LogMethods) {
   try {
     // Run CDK bootstrap if needed
     if (logger) {
