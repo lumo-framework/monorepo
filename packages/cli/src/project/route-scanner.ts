@@ -3,7 +3,7 @@ import path from 'path';
 import { Project, SourceFile } from 'ts-morph';
 
 interface RouteInfo {
-  file: string;
+  file: string | string[];
   route: string;
   methods: string[];
   hasDefaultExport: boolean;
@@ -42,21 +42,43 @@ export async function scanRoutes(): Promise<RouteInfo[]> {
   }
 
   const project = new Project();
-  const routes: RouteInfo[] = [];
+  const routeMap = new Map<string, RouteInfo>();
 
   for (const file of allFiles) {
     try {
       const sourceFile = project.addSourceFileAtPath(file);
       const routeInfo = analyzeRouteFile(sourceFile, file);
       if (routeInfo) {
-        routes.push(routeInfo);
+        const existingRoute = routeMap.get(routeInfo.route);
+        if (existingRoute) {
+          // Merge with existing route
+          existingRoute.methods = [
+            ...new Set([...existingRoute.methods, ...routeInfo.methods]),
+          ];
+          existingRoute.exports = [
+            ...new Set([...existingRoute.exports, ...routeInfo.exports]),
+          ];
+          existingRoute.hasDefaultExport =
+            existingRoute.hasDefaultExport || routeInfo.hasDefaultExport;
+          // Keep the file reference - we'll need to track multiple files later
+          if (Array.isArray(existingRoute.file)) {
+            (existingRoute.file as string[]).push(routeInfo.file as string);
+          } else {
+            existingRoute.file = [
+              existingRoute.file as string,
+              routeInfo.file as string,
+            ];
+          }
+        } else {
+          routeMap.set(routeInfo.route, routeInfo);
+        }
       }
     } catch {
       console.warn(`Failed to analyze ${file}`);
     }
   }
 
-  return routes;
+  return Array.from(routeMap.values());
 }
 
 export async function scanSubscribers(): Promise<SubscriberInfo[]> {
@@ -98,7 +120,6 @@ export function expandRoutesToMethods(routes: RouteInfo[]): MethodRoute[] {
   const methodRoutes: MethodRoute[] = [];
 
   for (const route of routes) {
-    // If route has specific HTTP method exports, create separate entries for each
     const httpMethods = [
       'GET',
       'POST',
@@ -108,28 +129,77 @@ export function expandRoutesToMethods(routes: RouteInfo[]): MethodRoute[] {
       'HEAD',
       'OPTIONS',
     ];
-    const methodExports = route.exports.filter((name) =>
-      httpMethods.includes(name.toUpperCase())
-    );
 
-    if (methodExports.length > 0) {
-      // Create separate method routes for each HTTP method export
-      for (const methodExport of methodExports) {
+    // Handle routes with multiple files - need to analyze each file individually
+    const files = Array.isArray(route.file) ? route.file : [route.file];
+
+    // For routes with multiple files, we need to scan each file to find which exports which methods
+    if (files.length > 1) {
+      const project = new Project();
+
+      for (const file of files) {
+        try {
+          const sourceFile = project.addSourceFileAtPath(file);
+          const exports = sourceFile.getExportedDeclarations();
+          const hasDefaultExport =
+            sourceFile.getDefaultExportSymbol() !== undefined;
+          const exportNames: string[] = [];
+          exports.forEach((_, name: string) => {
+            exportNames.push(name);
+          });
+
+          const methodExports = exportNames.filter((name) =>
+            httpMethods.includes(name.toUpperCase())
+          );
+
+          if (methodExports.length > 0) {
+            // Create separate method routes for each HTTP method export
+            for (const methodExport of methodExports) {
+              methodRoutes.push({
+                file: file,
+                route: route.route,
+                method: methodExport.toUpperCase(),
+                exportName: methodExport,
+              });
+            }
+          } else if (hasDefaultExport || exportNames.includes('handler')) {
+            // Use default export or handler for all methods
+            methodRoutes.push({
+              file: file,
+              route: route.route,
+              method: 'ALL',
+              exportName: hasDefaultExport ? 'default' : 'handler',
+            });
+          }
+        } catch {
+          console.warn(`Failed to analyze ${file} for method expansion`);
+        }
+      }
+    } else {
+      // Single file route - use the consolidated exports
+      const methodExports = route.exports.filter((name) =>
+        httpMethods.includes(name.toUpperCase())
+      );
+
+      if (methodExports.length > 0) {
+        // Create separate method routes for each HTTP method export
+        for (const methodExport of methodExports) {
+          methodRoutes.push({
+            file: files[0],
+            route: route.route,
+            method: methodExport.toUpperCase(),
+            exportName: methodExport,
+          });
+        }
+      } else if (route.hasDefaultExport || route.exports.includes('handler')) {
+        // Use default export or handler for all methods
         methodRoutes.push({
-          file: route.file,
+          file: files[0],
           route: route.route,
-          method: methodExport.toUpperCase(),
-          exportName: methodExport,
+          method: 'ALL',
+          exportName: route.hasDefaultExport ? 'default' : 'handler',
         });
       }
-    } else if (route.hasDefaultExport || route.exports.includes('handler')) {
-      // Use default export or handler for all methods
-      methodRoutes.push({
-        file: route.file,
-        route: route.route,
-        method: 'ALL',
-        exportName: route.hasDefaultExport ? 'default' : 'handler',
-      });
     }
   }
 
@@ -195,6 +265,28 @@ function analyzeRouteFile(
   // Handle index files
   if (routePath.endsWith('/index')) {
     routePath = routePath.replace('/index', '') || '/';
+  }
+
+  // Handle method-specific files that should map to directory route
+  // If the file is not index.ts and doesn't have dynamic parameters (no []),
+  // and is in a directory with other files, it should map to the directory route
+  const pathParts = routePath.split('/');
+  const fileName = pathParts[pathParts.length - 1];
+
+  // Check if this is a method-specific file (not index, not dynamic parameter)
+  if (
+    fileName &&
+    fileName !== '' &&
+    !fileName.includes('[') &&
+    !fileName.includes(']') &&
+    pathParts.length > 1
+  ) {
+    // Common method-specific file names that should map to parent directory
+    const methodFiles = ['create', 'update', 'delete', 'edit', 'new'];
+    if (methodFiles.includes(fileName.toLowerCase())) {
+      // Map to parent directory route
+      routePath = pathParts.slice(0, -1).join('/') || '/';
+    }
   }
 
   return {

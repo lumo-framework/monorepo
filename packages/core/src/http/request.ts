@@ -9,6 +9,7 @@ export type Request = {
   ip: string;
   userAgent: string;
   body?: string;
+  header: (name: string) => string | undefined;
   json: () => Promise<Record<string, unknown>>;
   text: () => Promise<string>;
   formData: () => Promise<Record<string, string | string[]>>;
@@ -42,6 +43,15 @@ export const createRequest = (data: {
 
   return {
     ...request,
+    header: (name: string): string | undefined => {
+      const lowerName = name.toLowerCase();
+      for (const [key, value] of Object.entries(request.headers)) {
+        if (key.toLowerCase() === lowerName) {
+          return value;
+        }
+      }
+      return undefined;
+    },
     json: async (): Promise<Record<string, unknown>> => {
       if (!request.body) {
         throw new Error('No body to parse as JSON');

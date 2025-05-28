@@ -19,6 +19,10 @@ const networkingSchema = z.object({
   natGateways: z.number().min(0).max(3).default(0), // 0=no egress, 1=cost-effective, 2-3=high availability
 });
 
+const buildSchema = z.object({
+  exclude: z.array(z.string()).optional(),
+});
+
 export const configSchema = z.object({
   projectName: z.string(),
   environment: z.string().default('dev'),
@@ -26,6 +30,7 @@ export const configSchema = z.object({
   region: z.string().optional(),
   domain: domainSchema.optional(),
   networking: networkingSchema.optional(),
+  build: buildSchema.optional(),
   resources: z.record(z.any()).optional(),
   events: z
     .object({
