@@ -43,12 +43,12 @@ Before filling out this template, please check where your request belongs:
 
 - [ ] CLI (new commands, flags, options)
 - [ ] Core framework (runtime, execution)
-- [ ] New adapter for: ******\_\_\_\_******
-- [ ] Existing adapter: ******\_\_\_\_******
+- [ ] New adapter for: **\*\***\_\_\_\_**\*\***
+- [ ] Existing adapter: **\*\***\_\_\_\_**\*\***
 - [ ] Build system
 - [ ] Type checking
 - [ ] Configuration system
-- [ ] Other: ******\_\_\_\_******
+- [ ] Other: **\*\***\_\_\_\_**\*\***
 
 ### API design (if applicable)
 

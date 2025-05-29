@@ -53,11 +53,11 @@ Which part of tsc-run is affected?
 
 - [ ] CLI
 - [ ] Core framework
-- [ ] Adapter (specify which): ******\_\_\_\_******
+- [ ] Adapter (specify which): **\*\***\_\_\_\_**\*\***
 - [ ] Build system
 - [ ] Type checking
 - [ ] Configuration
-- [ ] Other: ******\_\_\_\_******
+- [ ] Other: **\*\***\_\_\_\_**\*\***
 
 ## 📋 **Additional Context**
 
