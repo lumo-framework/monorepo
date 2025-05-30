@@ -128,6 +128,7 @@ async function generateLambdaWrapper(
   method: string
 ): Promise<string> {
   const wrapperContent = `
+import '@tsc-run/adapter-aws/secret-resolver';
 import { lambdaAdapter } from '@tsc-run/adapter-aws';
 import {${method} as handler} from '${path.resolve(routeFile)}';
 
@@ -145,6 +146,7 @@ async function generateSubscriberWrapper(
   subscriberFile: string
 ): Promise<string> {
   const wrapperContent = `
+import '@tsc-run/adapter-aws/secret-resolver';
 import { subscriberAdapter } from '@tsc-run/adapter-aws';
 import {listen} from '${path.resolve(subscriberFile)}';
 
