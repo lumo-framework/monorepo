@@ -2,8 +2,9 @@ import { App } from 'aws-cdk-lib';
 import { AppStack } from './cdk/app-stack.js';
 import { NetworkingStack } from './cdk/networking-stack.js';
 import { DomainStack } from './cdk/domain-stack.js';
-import { loadConfig, type config } from '@tsc-run/core';
+import { type config, loadConfig } from '@tsc-run/core';
 import { generateStackName } from './utils.js';
+import { SecretStack } from './cdk/secret-stack.js';
 
 async function main() {
   const app = new App();
@@ -36,6 +37,16 @@ async function main() {
     environment: config.environment,
     natGateways: config.networking?.natGateways ?? 0,
   });
+
+  // Create a SecretStack
+  new SecretStack(
+    app,
+    generateStackName(config.projectName, config.environment, 'Secret'),
+    {
+      env,
+      config,
+    }
+  );
 
   // Create AppStack with networking dependencies
   const appStackName = generateStackName(

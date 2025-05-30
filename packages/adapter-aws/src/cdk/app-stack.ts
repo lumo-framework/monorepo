@@ -1,21 +1,22 @@
 import { Stack, StackProps } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
-import { Function, Runtime, Code, FunctionProps } from 'aws-cdk-lib/aws-lambda';
-import { RestApi, LambdaIntegration } from 'aws-cdk-lib/aws-apigateway';
+import { Code, Function, FunctionProps, Runtime } from 'aws-cdk-lib/aws-lambda';
+import { LambdaIntegration, RestApi } from 'aws-cdk-lib/aws-apigateway';
 import { EventBus, IEventBus, Rule } from 'aws-cdk-lib/aws-events';
 import { LambdaFunction } from 'aws-cdk-lib/aws-events-targets';
 import {
-  Vpc,
+  ISecurityGroup,
+  IVpc,
   SecurityGroup,
   SubnetType,
-  IVpc,
-  ISecurityGroup,
+  Vpc,
 } from 'aws-cdk-lib/aws-ec2';
-import { readdirSync, existsSync } from 'fs';
+import { existsSync, readdirSync } from 'fs';
 import { join } from 'path';
 import { NetworkingStackExports } from './networking-stack.js';
 import type { config } from '@tsc-run/core';
 import { toPascalCase } from '../utils.js';
+import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
 
 interface AppStackProps extends StackProps {
   config: config.Config;
@@ -31,6 +32,8 @@ export class AppStack extends Stack {
 
   constructor(scope: Construct, id: string, props: AppStackProps) {
     super(scope, id, props);
+
+    const ssmParameterPrefix = `arn:aws:ssm:${this.region}:${this.account}:parameter/${props.config.projectName}/${props.config.environment}/*`;
 
     // Check if networking is enabled (NAT gateways > 0)
     this.hasNetworking = (props.config.networking?.natGateways ?? 0) > 0;
@@ -98,6 +101,8 @@ export class AppStack extends Stack {
         code: Code.fromAsset(filePath),
         environment: {
           EVENT_BUS_NAME: this.eventBus.eventBusName,
+          TSC_RUN_PROJECT_NAME: props.config.projectName,
+          TSC_RUN_ENVIRONMENT: props.config.environment,
         },
       };
 
@@ -124,6 +129,14 @@ export class AppStack extends Stack {
 
       // Add route to API Gateway
       this.addRoute(this.api, route, method, lambdaFunction);
+
+      // Grant permission to read SSM parameters if configured
+      lambdaFunction.addToRolePolicy(
+        new PolicyStatement({
+          actions: ['ssm:GetParameter'],
+          resources: [ssmParameterPrefix],
+        })
+      );
     }
 
     // Create subscriber Lambda functions
@@ -132,6 +145,10 @@ export class AppStack extends Stack {
         runtime: Runtime.NODEJS_22_X,
         handler: 'index.lambdaHandler',
         code: Code.fromAsset(filePath),
+        environment: {
+          TSC_RUN_PROJECT_NAME: props.config.projectName,
+          TSC_RUN_ENVIRONMENT: props.config.environment,
+        },
       };
 
       // Only attach VPC configuration if networking is enabled
@@ -173,6 +190,14 @@ export class AppStack extends Stack {
 
       // Add the subscriber function as a target
       rule.addTarget(new LambdaFunction(subscriberFunction));
+
+      // Grant permission to read SSM parameters if configured
+      subscriberFunction.addToRolePolicy(
+        new PolicyStatement({
+          actions: ['ssm:GetParameter'],
+          resources: [ssmParameterPrefix],
+        })
+      );
     }
   }
 

@@ -2,16 +2,10 @@ import { configSchema } from './schema.js';
 import { pathToFileURL } from 'url';
 import { resolve } from 'path';
 import { existsSync } from 'fs';
-import { build } from 'esbuild';
-import { tmpdir } from 'os';
-import { join } from 'path';
-import fs from 'fs/promises';
 
 export async function loadConfig(configPath?: string) {
   // Try different config file names in order of preference
-  const configNames = configPath
-    ? [configPath]
-    : ['tsc-run.config.ts', 'tsc-run.config.js', 'tsc-run.config.mjs'];
+  const configNames = configPath ? [configPath] : ['tsc-run.config.js'];
 
   let fullPath: string | null = null;
   for (const name of configNames) {
@@ -26,27 +20,7 @@ export async function loadConfig(configPath?: string) {
     throw new Error(`Config file not found. Tried: ${configNames.join(', ')}`);
   }
 
-  let moduleUrl: string;
-
-  // If it's a TypeScript file, compile it first
-  if (fullPath.endsWith('.ts')) {
-    const result = await build({
-      entryPoints: [fullPath],
-      bundle: true,
-      platform: 'node',
-      format: 'esm',
-      write: false,
-      target: 'es2022',
-    });
-
-    // Write to temp file and import
-    const tempFile = join(tmpdir(), `tsc-run-config-${Date.now()}.mjs`);
-    await fs.writeFile(tempFile, result.outputFiles[0].text);
-    moduleUrl = pathToFileURL(tempFile).href;
-  } else {
-    moduleUrl = pathToFileURL(fullPath).href;
-  }
-
+  const moduleUrl = pathToFileURL(fullPath).href;
   const config = await import(moduleUrl);
   return configSchema.parse(config.default);
 }

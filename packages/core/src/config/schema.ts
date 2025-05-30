@@ -31,7 +31,15 @@ export const configSchema = z.object({
   domain: domainSchema.optional(),
   networking: networkingSchema.optional(),
   build: buildSchema.optional(),
-  resources: z.record(z.any()).optional(),
+  secrets: z
+    .record(
+      z.string(),
+      z.object({
+        value: z.union([z.string(), z.function().returns(z.string())]),
+        description: z.string().optional(), // Optional description of the secret
+      })
+    )
+    .optional(),
   events: z
     .object({
       eventBus: z.string().default('default'),

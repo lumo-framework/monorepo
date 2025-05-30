@@ -43,11 +43,11 @@ async function promptForDomainSetup(config: config.Config): Promise<boolean> {
   const domainName = config.domain.name;
   const domainType = config.domain.type;
 
-  // Check if domain is already resolving (likely already configured)
+  // Check if the domain is already resolving (likely already configured)
   const isDomainReady = await checkDomainReady(domainName);
   if (isDomainReady) {
     log.success(`Domain ${domainName} appears to be already configured`);
-    return true; // Skip prompt if domain is working
+    return true; // Skip prompt if the domain is working
   }
 
   log.heading('\nDomain & SSL Certificate Setup Required');
@@ -119,7 +119,7 @@ export const deployCommand: CommandModule = {
         loadConfig()
       );
 
-      // Check if build exists before attempting deployment
+      // Check if a build exists before attempting deployment
       try {
         await fs.access('dist/lambdas');
       } catch {
@@ -129,14 +129,14 @@ export const deployCommand: CommandModule = {
         process.exit(1);
       }
 
-      // Show domain setup prompt if needed (unless --force is used)
+      // Show a domain setup prompt if needed (unless --force is used)
       if (!argv.force) {
         const shouldContinue = await promptForDomainSetup(config);
         if (!shouldContinue) {
           process.exit(0);
         }
       } else if (config.domain && config.domain.type !== 'external') {
-        // Show informational message when using --force with domain config
+        // Show an informational message when using --force with domain config
         log.info('⚡ Using --force flag: Skipping domain setup confirmation');
         log.info('📋 Remember to configure DNS settings after deployment');
       }

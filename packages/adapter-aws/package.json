@@ -7,6 +7,10 @@
     "url": "https://github.com/tsc-run/cli.git",
     "directory": "packages/adapter-aws"
   },
+  "exports": {
+    ".": "./dist/index.js",
+    "./secret-resolver": "./dist/secret-resolver.js"
+  },
   "homepage": "https://docs.tsc.run",
   "keywords": [
     "typescript",
@@ -30,11 +34,12 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@aws-sdk/client-ssm": "^3.817.0",
     "@tsc-run/core": "workspace:*",
     "@tsc-run/utils": "workspace:*",
+    "aws-cdk": "^2.0.0",
     "aws-cdk-lib": "^2.0.0",
     "constructs": "^10.0.0",
-    "aws-cdk": "^2.0.0",
     "esbuild": "^0.25.4"
   },
   "devDependencies": {
