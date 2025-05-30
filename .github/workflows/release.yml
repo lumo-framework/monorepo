@@ -46,6 +46,13 @@ jobs:
             echo "tag=latest" >> $GITHUB_OUTPUT
           fi
 
+      - name: Publish @tsc-run/utils
+        run: |
+          cd packages/utils
+          pnpm publish --tag ${{ steps.npm-tag.outputs.tag }} --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
       - name: Publish @tsc-run/core
         run: |
           cd packages/core
