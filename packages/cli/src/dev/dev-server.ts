@@ -359,6 +359,19 @@ export { handler };
 
       await fs.writeFile(wrapperPath, wrapperContent);
 
+      // Get external modules from config, following the same pattern as build command
+      const externalModules = this.config?.build?.exclude || [];
+      const defaultExternal = [
+        'aws-sdk',
+        'path',
+        'os',
+        'crypto',
+        'util',
+        'events',
+        'stream',
+        'buffer',
+      ];
+
       // Use our own bundler with ESM format for dev server
       await build({
         entryPoints: [wrapperPath],
@@ -367,16 +380,7 @@ export { handler };
         platform: 'node',
         target: 'node18',
         format: 'esm',
-        external: [
-          'aws-sdk',
-          'path',
-          'os',
-          'crypto',
-          'util',
-          'events',
-          'stream',
-          'buffer',
-        ],
+        external: Array.from(new Set([...defaultExternal, ...externalModules])),
         // Use absolute path resolution for @tsc-run packages in workspace
         alias: {
           '@tsc-run/core': path.resolve(
