@@ -341,16 +341,15 @@ export class EnhancedDevLogger {
         return;
       }
 
-      // Allow error messages through
+      // Capture error messages but don't display them directly
       const message = args.join(' ');
       if (
         message.includes('Error:') ||
         message.includes('error') ||
         message.includes('Error handling')
       ) {
-        if (this.originalConsoleLog) {
-          this.originalConsoleLog.apply(console, args);
-        }
+        // Log to metrics display instead of console
+        this.metricsDisplay.addLog('error', this.formatLogMessage(args), args);
         return;
       }
 
