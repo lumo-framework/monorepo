@@ -35,13 +35,19 @@
     "@tsc-run/adapter-aws": "workspace:*",
     "@tsc-run/core": "workspace:*",
     "@tsc-run/utils": "workspace:*",
+    "chalk": "^4.1.2",
+    "chokidar": "^4.0.0",
+    "cli-table3": "^0.6.5",
     "esbuild": "^0.25.4",
+    "express": "^4.21.0",
     "glob": "^11.0.2",
     "ts-morph": "^26.0.0",
     "yargs": "^17.0.0",
     "zod": "^3.22.0"
   },
   "devDependencies": {
+    "@types/cli-table": "^0.3.4",
+    "@types/express": "^4.17.0",
     "@types/node": "^22.15.21",
     "@types/yargs": "^17.0.0",
     "typescript": "^5.0.0"
