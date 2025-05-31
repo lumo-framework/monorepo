@@ -57,6 +57,9 @@ export class DevServer {
       // Clean up dev cache before starting
       await this.cleanupDevCache();
 
+      // Setup secrets from config for local development
+      await this.setupLocalSecrets();
+
       // Setup event system with config
       this.eventSystem.setConfig(this.config);
 
@@ -456,6 +459,40 @@ export { handler };
     }
   }
 
+  private async setupLocalSecrets(): Promise<void> {
+    if (!this.config?.secrets) {
+      return;
+    }
+
+    let secretCount = 0;
+    for (const [secretName, secretConfig] of Object.entries(
+      this.config.secrets
+    )) {
+      try {
+        // Resolve the secret value (could be string or function)
+        const secretValue =
+          typeof secretConfig.value === 'function'
+            ? await secretConfig.value()
+            : secretConfig.value;
+
+        // Set environment variable in uppercase format (matching default resolver)
+        const envVarName = secretName.toUpperCase();
+        process.env[envVarName] = secretValue;
+        secretCount++;
+
+        if (this.options.verbose) {
+          this.logger.debug(`Set local secret: ${secretName} -> ${envVarName}`);
+        }
+      } catch (error) {
+        this.logger.warn(`Failed to resolve secret '${secretName}': ${error}`);
+      }
+    }
+
+    if (secretCount > 0) {
+      this.logger.info(`🔐 Set ${secretCount} secrets for local development`);
+    }
+  }
+
   private async cleanupDevCache(): Promise<void> {
     try {
       const tempDir = path.join(process.cwd(), '.tsc-run', 'dev-cache');
@@ -533,6 +570,7 @@ export { handler };
       } else if (filePath.includes('tsc-run.config')) {
         // Reload config
         this.config = await loadConfig();
+        await this.setupLocalSecrets();
         this.eventSystem.setConfig(this.config);
         await this.scanAndRegisterSubscribers();
       }
