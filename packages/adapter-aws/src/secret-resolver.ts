@@ -12,7 +12,7 @@ secrets.setSecretResolver(async (name: string) => {
 
   // Fetch the secret from AWS SSM Parameter Store
   const command = new GetParameterCommand({
-    Name: `/${process.env.TSC_RUN_PROJECT_NAME}/${process.env.TSC_RUN_ENVIRONMENT}/${name.toLowerCase()}`,
+    Name: `/${process.env.TSC_RUN_PROJECT_NAME}/${process.env.TSC_RUN_ENVIRONMENT}/${name}`,
     WithDecryption: true,
   });
 
