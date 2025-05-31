@@ -380,7 +380,7 @@ export { handler };
         platform: 'node',
         target: 'node18',
         format: 'esm',
-        external: [...defaultExternal, ...externalModules],
+        external: Array.from(new Set([...defaultExternal, ...externalModules])),
         // Use absolute path resolution for @tsc-run packages in workspace
         alias: {
           '@tsc-run/core': path.resolve(
