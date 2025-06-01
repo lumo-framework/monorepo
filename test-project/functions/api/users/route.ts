@@ -1,4 +1,4 @@
-import { response, http } from '@tsc-run/core';
+import { response, http, events } from '@tsc-run/core';
 
 export async function GET(req: http.Request): Promise<http.Response> {
   console.log('Processing GET request for users');
@@ -15,5 +15,12 @@ export async function POST(req: http.Request): Promise<http.Response> {
     throw new Error('Simulated error: ' + req.body.error);
   }
 
-  return response(201).json({ message: 'User created successfully' });
+  // Emit user created event
+  const userData = { userId: '123', email: 'test@example.com' };
+  await events.emit('user.created', userData);
+
+  return response(201).json({
+    message: 'User created successfully',
+    user: userData,
+  });
 }

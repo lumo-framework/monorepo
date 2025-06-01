@@ -13,10 +13,11 @@ interface DomainInfo {
 }
 
 interface DeploymentResult {
-  url?: string;
-  apiGatewayUrl?: string | null;
-  customDomainUrl?: string | null;
   provider: string;
+  success?: boolean;
+  url?: string;
+  errors?: string[];
+  warnings?: string[];
   domain?: DomainInfo;
 }
 
@@ -26,77 +27,89 @@ export function validateDeployment(config: DeploymentConfig) {
   }
 }
 
+function isDeploymentSuccessful(result: DeploymentResult): boolean {
+  // Check explicit success flag first (Cloudflare)
+  if (result.success !== undefined) {
+    return result.success;
+  }
+
+  // For AWS or other providers, assume success if no errors
+  return !result.errors || result.errors.length === 0;
+}
+
 export function formatDeploymentOutput(result: DeploymentResult): void {
-  console.log();
-  log.success('🚀 Deployment Successful!');
-  console.log();
+  log.newline();
 
-  // API URLs
-  if (result.customDomainUrl) {
-    log.info(`📡 Custom Domain: ${result.customDomainUrl}`);
-    if (result.apiGatewayUrl) {
-      console.log(`🔗 API Gateway: ${result.apiGatewayUrl}`);
+  // Check if deployment actually succeeded
+  const deploymentSucceeded = isDeploymentSuccessful(result);
+
+  if (deploymentSucceeded) {
+    log.boxed('🚀 Deployment Successful!');
+    log.newline();
+
+    // Show API URL if available
+    if (result.url) {
+      log.info(`📡 API URL: ${result.url}`);
     }
-  } else if (result.apiGatewayUrl) {
-    log.info(`📡 API URL: ${result.apiGatewayUrl}`);
-  } else {
-    const displayUrl =
-      result.url === 'URL not found'
-        ? 'Check CloudFormation outputs for API Gateway URL'
-        : result.url;
-    log.info(`📡 API URL: ${displayUrl}`);
-  }
-  console.log(`🔧 Provider: ${result.provider.toUpperCase()}`);
 
-  // Domain configuration info
-  if (result.domain) {
-    console.log();
-    log.heading('🌐 Domain Configuration');
-    console.log(`   Domain: https://${result.domain.name}`);
-    console.log(`   Type: ${result.domain.type}`);
+    // Show domain configuration if available
+    if (result.domain) {
+      log.newline();
+      log.heading('🌐 Domain Configuration');
+      log.info(`   Domain: https://${result.domain.name}`);
+      log.info(`   Type: ${result.domain.type}`);
 
-    // DNS Setup Instructions
-    if (result.domain.setupInstructions) {
-      console.log();
-      log.warn('⚙️ Setup Required:');
+      // DNS Setup Instructions
+      if (result.domain.setupInstructions) {
+        log.newline();
+        log.warn('⚙️ Setup Required:');
 
-      // Certificate validation notice for subdomains
-      if (result.domain.type === 'subdomain') {
-        console.log();
-        console.log('   📧 Certificate Validation:');
-        console.log(
-          '   Check your email for AWS certificate validation messages'
-        );
-        log.warn('   💡 Validate the certificate first, then set up DNS');
-      }
+        // Certificate validation notice for subdomains
+        if (result.domain.type === 'subdomain') {
+          log.newline();
+          log.info('   📧 Certificate Validation:');
+          log.info(
+            '   Check your email for AWS certificate validation messages'
+          );
+          log.warn('   💡 Validate the certificate first, then set up DNS');
+        }
 
-      console.log();
-      console.log('   🌐 DNS Configuration:');
-      console.log(`   ${result.domain.setupInstructions}`);
+        log.newline();
+        log.info('   🌐 DNS Configuration:');
+        log.info(`   ${result.domain.setupInstructions}`);
 
-      if (result.domain.nameServers) {
-        console.log();
-        console.log('   Name Servers to add:');
-        result.domain.nameServers.forEach((ns: string, index: number) => {
-          console.log(`   ${index + 1}. ${ns.trim()}`);
-        });
-        console.log();
-        log.warn(
-          '   💡 Add these NS records to your parent domain after validating certificate'
-        );
-      }
+        if (result.domain.nameServers) {
+          log.newline();
+          log.info('   Name Servers to add:');
+          result.domain.nameServers.forEach((ns: string, index: number) => {
+            log.info(`   ${index + 1}. ${ns.trim()}`);
+          });
+          log.newline();
+          log.warn(
+            '   💡 Add these NS records to your parent domain after validating certificate'
+          );
+        }
 
-      if (result.domain.cnameTarget) {
-        console.log();
-        console.log(`   CNAME Target: ${result.domain.cnameTarget}`);
-        log.warn(
-          '   💡 Create this CNAME record in your external DNS provider'
-        );
+        if (result.domain.cnameTarget) {
+          log.newline();
+          log.info(`   CNAME Target: ${result.domain.cnameTarget}`);
+          log.warn(
+            '   💡 Create this CNAME record in your external DNS provider'
+          );
+        }
       }
     }
+
+    // Show warnings if any
+    if (result.warnings && result.warnings.length > 0) {
+      log.newline();
+      log.heading('⚠️ Deployment Warnings:');
+      result.warnings.forEach((warning) => {
+        log.warn(`${warning}`);
+      });
+    }
   }
 
-  console.log();
-  log.success('✨ Your API is ready!');
-  console.log();
+  // Don't show anything for failed deployments - the progress display already handled the error
+  log.newline();
 }

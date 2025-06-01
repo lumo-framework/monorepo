@@ -1,18 +1,24 @@
 {
-  "name": "@tsc-run/utils",
-  "version": "0.7.0-next.1",
-  "description": "Shared utilities for tsc-run packages",
+  "name": "@tsc-run/adapter-cloudflare",
+  "version": "0.6.0-alpha.1",
+  "description": "Cloudflare Workers runtime adapter for tsc-run framework",
   "repository": {
     "type": "git",
     "url": "https://github.com/tsc-run/cli.git",
-    "directory": "packages/utils"
+    "directory": "packages/adapter-cloudflare"
+  },
+  "exports": {
+    ".": "./dist/index.js",
+    "./secret-resolver": "./dist/secret-resolver.js",
+    "./event-dispatcher": "./dist/event-dispatcher.js"
   },
   "homepage": "https://docs.tsc.run",
   "keywords": [
     "typescript",
     "serverless",
-    "utils",
-    "cli"
+    "cloudflare",
+    "workers",
+    "runtime"
   ],
   "license": "MIT",
   "type": "module",
@@ -29,20 +35,12 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "boxen": "^8.0.1",
-    "chalk": "^5.4.1",
-    "cli-table3": "^0.6.5",
-    "figlet": "^1.8.1",
-    "ora": "^8.2.0",
-    "prompts": "^2.4.2"
+    "@tsc-run/core": "workspace:*",
+    "@tsc-run/utils": "workspace:*"
   },
   "devDependencies": {
-    "@types/figlet": "^1.7.0",
-    "@types/node": "^22.15.21",
-    "@types/prompts": "^2.4.9",
+    "@cloudflare/workers-types": "^4.20241127.0",
+    "@types/node": "^20.0.0",
     "typescript": "^5.0.0"
-  },
-  "publishConfig": {
-    "tag": "next"
   }
 }

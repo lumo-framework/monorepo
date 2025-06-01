@@ -1,0 +1,83 @@
+name: Publish Next
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  publish-next:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build packages
+        run: pnpm build
+
+      - name: Run type checking
+        run: pnpm typecheck
+
+      - name: Bump next version
+        run: |
+          # Get current next version and increment
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          if [[ "$CURRENT_VERSION" == *"next"* ]]; then
+            # Extract next number and increment
+            NEXT_NUM=$(echo $CURRENT_VERSION | grep -o 'next\.[0-9]*' | grep -o '[0-9]*')
+            NEW_NEXT_NUM=$((NEXT_NUM + 1))
+            NEW_VERSION=$(echo $CURRENT_VERSION | sed "s/next\.[0-9]*/next.$NEW_NEXT_NUM/")
+          else
+            # First next version
+            NEW_VERSION="0.7.0-next.1"
+          fi
+          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+
+          # Update all package.json files
+          pnpm version $NEW_VERSION --no-git-tag-version
+          cd packages/utils && pnpm version $NEW_VERSION --no-git-tag-version
+          cd ../core && pnpm version $NEW_VERSION --no-git-tag-version
+          cd ../adapter-aws && pnpm version $NEW_VERSION --no-git-tag-version
+          cd ../cli && pnpm version $NEW_VERSION --no-git-tag-version
+
+      - name: Publish @tsc-run/utils
+        run: |
+          cd packages/utils
+          pnpm publish --tag next --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish @tsc-run/core
+        run: |
+          cd packages/core
+          pnpm publish --tag next --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish @tsc-run/adapter-aws
+        run: |
+          cd packages/adapter-aws
+          pnpm publish --tag next --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish @tsc-run/cli
+        run: |
+          cd packages/cli
+          pnpm publish --tag next --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

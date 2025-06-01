@@ -76,21 +76,19 @@ export class AppStack extends Stack {
     const eventBusName = this.sanitizeEventBusName(configuredEventBusName);
     this.eventBus = EventBus.fromEventBusName(this, 'EventBus', eventBusName);
 
-    // Discover built Lambda functions
-    const lambdasDir = join(process.cwd(), 'dist', 'lambdas');
+    // Discover built functions
+    const functionsDir = join(process.cwd(), 'dist', 'functions');
 
-    if (!existsSync(lambdasDir)) {
-      throw new Error(
-        'No built Lambda functions found. Run "tsc-run build" first.'
-      );
+    if (!existsSync(functionsDir)) {
+      throw new Error('No built functions found. Run "tsc-run build" first.');
     }
 
-    // Get all Lambda files
-    const lambdaFiles = this.discoverLambdaFiles(lambdasDir);
-    const subscriberFiles = this.discoverSubscriberFiles(lambdasDir);
+    // Get all function files
+    const lambdaFiles = this.discoverLambdaFiles(functionsDir);
+    const subscriberFiles = this.discoverSubscriberFiles(functionsDir);
 
     if (lambdaFiles.length === 0 && subscriberFiles.length === 0) {
-      throw new Error('No Lambda functions found in dist/lambdas directory.');
+      throw new Error('No functions found in dist/functions directory.');
     }
 
     // Create Lambda functions and API routes

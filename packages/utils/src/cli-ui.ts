@@ -17,6 +17,7 @@ export interface LogMethods {
   table(rows: Record<string, unknown>[]): void;
   prompt: typeof prompts;
   banner(text: string): void;
+  newline(): void;
 }
 
 const success = (message: string): void => {
@@ -94,6 +95,10 @@ const banner = (text: string): void => {
   }
 };
 
+const newline = (): void => {
+  console.log();
+};
+
 export const log: LogMethods = {
   success,
   error,
@@ -106,4 +111,5 @@ export const log: LogMethods = {
   table,
   prompt: prompts,
   banner,
+  newline,
 };
