@@ -46,6 +46,7 @@ export class MetricsDisplay {
   private currentRouteContext?: string;
   private lastDisplayHeight: number = 0;
   private lastDisplayContent: string = '';
+  private shutdownCallback?: () => Promise<void>;
 
   constructor(options: MetricsDisplayOptions = {}) {
     this.options = {
@@ -656,16 +657,27 @@ export class MetricsDisplay {
 
     // Header
     content += chalk.cyan.bold(
-      `📋 tsc.run logs viewer - http://localhost:${port} (${this.logs.length} logs)\n\n`
+      `📋 tsc.run logs - http://localhost:${port} (${this.logs.length} logs)`
     );
-
-    // Logs table
-    content += this.buildLogsTable() + '\n';
-
-    // Footer
     content += chalk.blackBright(
-      "📋 Press 'l' to toggle logs • 'r' to refresh • 'c' to clear • 'q' to quit • 'h' for help"
+      " • Press 'l' to toggle • 'r' refresh • 'c' clear • 'q' quit\n\n"
     );
+
+    // Show logs as a clean stream
+    if (this.logs.length === 0) {
+      content += chalk.blackBright('No logs captured yet\n');
+    } else {
+      this.logs.slice(0, 40).forEach((log) => {
+        const levelColor = this.getLogLevelColor(log.level);
+        const timeStr = this.formatLogTime(log.timestamp);
+        const functionName = log.routeKey || log.functionName || 'system';
+
+        content += chalk.blackBright(`[${timeStr}] `);
+        content += levelColor(`${log.level.toUpperCase().padEnd(5)} `);
+        content += chalk.cyan(`${this.truncate(functionName, 20).padEnd(20)} `);
+        content += `${log.message}\n`;
+      });
+    }
 
     return content;
   }
@@ -716,6 +728,10 @@ export class MetricsDisplay {
     }
   }
 
+  setShutdownCallback(callback: () => Promise<void>): void {
+    this.shutdownCallback = callback;
+  }
+
   setupKeyboardInput(onKeyPress?: (key: string) => void): void {
     // Only setup keyboard input if we're in a TTY
     if (!process.stdin.isTTY) {
@@ -762,8 +778,18 @@ export class MetricsDisplay {
         return true;
       case 'q':
       case '\u0003': // Ctrl+C
-        this.cleanup();
-        process.exit(0);
+        if (this.shutdownCallback) {
+          // Trigger graceful shutdown
+          this.shutdownCallback().catch(() => {
+            // If graceful shutdown fails, fallback to immediate exit
+            this.cleanup();
+            process.exit(1);
+          });
+        } else {
+          // Fallback to immediate exit if no callback is set
+          this.cleanup();
+          process.exit(0);
+        }
         return true;
       default:
         if (this.helpMode || this.logsMode) {
@@ -836,6 +862,16 @@ export class MetricsDisplay {
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit',
+    });
+  }
+
+  private formatLogTime(date: Date): string {
+    return date.toLocaleTimeString('en-US', {
+      hour12: false,
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      fractionalSecondDigits: 3,
     });
   }
 

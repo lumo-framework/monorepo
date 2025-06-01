@@ -6,7 +6,6 @@ import express, {
 import { createServer, type Server } from 'http';
 import * as chokidar from 'chokidar';
 import path from 'path';
-import { build } from 'esbuild';
 import { promises as fs } from 'fs';
 import { loadConfig, http } from '@tsc-run/core';
 import type { config } from '@tsc-run/core';
@@ -15,6 +14,7 @@ import {
   expandRoutesToMethods,
   scanSubscribers,
 } from '../project/route-scanner.js';
+import { bundleRoute } from '../project/bundler.js';
 import { LocalEventSystem, LocalEventAdapter } from './local-event-system.js';
 import { EnhancedDevLogger } from './enhanced-dev-logger.js';
 import { RequestAdapter } from './request-adapter.js';
@@ -87,6 +87,13 @@ export class DevServer {
       // Set port for metrics display
       this.logger.setPort(this.options.port);
 
+      // Set shutdown callback for graceful shutdown on 'q' key
+      this.logger.setShutdownCallback(async () => {
+        this.logger.info('\n👋 Shutting down development server...');
+        await this.stop();
+        process.exit(0);
+      });
+
       this.logger.success(
         `🚀 Development server started on http://localhost:${this.options.port}`
       );
@@ -149,7 +156,7 @@ export class DevServer {
       if (!handler) {
         statusCode = 404;
         res.status(404).json({ error: 'Route not found', path: requestPath });
-        return;
+        return { statusCode };
       }
 
       // Convert Express request to tsc-run request
@@ -170,15 +177,19 @@ export class DevServer {
 
       // Convert tsc-run response to Express response
       RequestAdapter.toExpress(response as http.Response, res);
+      return { statusCode };
     };
 
     try {
-      await this.logger.logRequestWithMetrics(
+      const result = await this.logger.logRequestWithMetrics(
         method,
         requestPath,
-        statusCode,
         requestHandler
       );
+      // Update status code from result if available
+      if (result && typeof result === 'object' && 'statusCode' in result) {
+        statusCode = (result as { statusCode: number }).statusCode;
+      }
     } catch (error) {
       statusCode = 500;
       this.logger.error(`Error handling ${method} ${requestPath}: ${error}`);
@@ -352,7 +363,7 @@ export class DevServer {
       );
       const outputPath = path.join(
         tempDir,
-        `temp-${path.basename(filePath, '.ts')}-${exportName}-${timestamp}-${random}-wrapper.js`
+        `temp-${path.basename(filePath, '.ts')}-${exportName}-${timestamp}-${random}-wrapper.mjs`
       );
 
       const wrapperContent = `
@@ -362,27 +373,11 @@ export { handler };
 
       await fs.writeFile(wrapperPath, wrapperContent);
 
-      // Get external modules from config only (no default externals for dev server)
+      // Get external modules from config
       const externalModules = this.config?.build?.exclude || [];
 
-      // Use our own bundler with ESM format for dev server
-      await build({
-        entryPoints: [wrapperPath],
-        bundle: true,
-        outfile: outputPath,
-        platform: 'node',
-        target: 'node18',
-        format: 'esm',
-        external: externalModules,
-        // Use absolute path resolution for @tsc-run packages in workspace
-        alias: {
-          '@tsc-run/core': path.resolve(
-            __dirname,
-            '../../../core/dist/index.js'
-          ),
-        },
-        logLevel: 'error',
-      });
+      // Use shared bundler for consistency with deploy
+      await bundleRoute(wrapperPath, outputPath, externalModules);
 
       // Clean up wrapper file
       await fs.unlink(wrapperPath);

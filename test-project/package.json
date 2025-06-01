@@ -1,0 +1,9 @@
+{
+  "name": "test-project",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "@tsc-run/core": "file:../packages/core",
+    "@tsc-run/adapter-aws": "file:../packages/adapter-aws"
+  }
+}

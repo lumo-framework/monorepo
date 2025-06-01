@@ -1,7 +1,7 @@
 {
   "name": "@tsc-run/adapter-aws",
-  "version": "0.5.0-alpha.5",
-  "description": "AWS adapter with CDK constructs and Lambda adapters for tsc-run framework",
+  "version": "0.6.0-alpha.1",
+  "description": "AWS Lambda runtime adapter for tsc-run framework",
   "repository": {
     "type": "git",
     "url": "https://github.com/tsc-run/cli.git",
@@ -17,7 +17,7 @@
     "serverless",
     "aws",
     "lambda",
-    "cdk"
+    "runtime"
   ],
   "license": "MIT",
   "type": "module",
@@ -36,11 +36,7 @@
   "dependencies": {
     "@aws-sdk/client-ssm": "^3.817.0",
     "@tsc-run/core": "workspace:*",
-    "@tsc-run/utils": "workspace:*",
-    "aws-cdk": "^2.0.0",
-    "aws-cdk-lib": "^2.0.0",
-    "constructs": "^10.0.0",
-    "esbuild": "^0.25.4"
+    "@tsc-run/utils": "workspace:*"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.0",

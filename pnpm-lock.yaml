@@ -43,18 +43,6 @@ importers:
       '@tsc-run/utils':
         specifier: workspace:*
         version: link:../utils
-      aws-cdk:
-        specifier: ^2.0.0
-        version: 2.1016.1
-      aws-cdk-lib:
-        specifier: ^2.0.0
-        version: 2.198.0(constructs@10.4.2)
-      constructs:
-        specifier: ^10.0.0
-        version: 10.4.2
-      esbuild:
-        specifier: ^0.25.4
-        version: 0.25.4
     devDependencies:
       '@types/aws-lambda':
         specifier: ^8.10.0
@@ -77,6 +65,12 @@ importers:
       '@tsc-run/utils':
         specifier: workspace:*
         version: link:../utils
+      aws-cdk:
+        specifier: ^2.0.0
+        version: 2.1016.1
+      aws-cdk-lib:
+        specifier: ^2.0.0
+        version: 2.198.0(constructs@10.4.2)
       chalk:
         specifier: ^4.1.2
         version: 4.1.2
@@ -86,6 +80,9 @@ importers:
       cli-table3:
         specifier: ^0.6.5
         version: 0.6.5
+      constructs:
+        specifier: ^10.0.0
+        version: 10.4.2
       esbuild:
         specifier: ^0.25.4
         version: 0.25.4

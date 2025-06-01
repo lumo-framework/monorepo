@@ -221,7 +221,7 @@ export class AppStack extends Stack {
 
         if (item.isDirectory()) {
           // Check if this directory contains an index.js (Lambda function)
-          const indexFile = join(fullPath, 'index.js');
+          const indexFile = join(fullPath, 'index.mjs');
           if (existsSync(indexFile)) {
             // Convert [param] directory names to {param} for API Gateway
             const normalizedRoutePath = routePath.replace(
@@ -371,8 +371,7 @@ export class AppStack extends Stack {
         const routePath = join(basePath, item.name);
 
         if (item.isDirectory()) {
-          // Check if this directory contains an index.js (Lambda function)
-          const indexFile = join(fullPath, 'index.js');
+          const indexFile = join(fullPath, 'index.mjs');
           if (existsSync(indexFile)) {
             const name = routePath.replace(/\\/g, '/');
             files.push({ name, filePath: fullPath });

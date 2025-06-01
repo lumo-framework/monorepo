@@ -192,8 +192,7 @@ async function runCdkCommand(
     // Get the path to the adapter's built CDK app
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = dirname(__filename);
-    const adapterDir = join(__dirname, '..');
-    const cdkApp = join(adapterDir, 'dist/app.js');
+    const cdkApp = join(__dirname, 'app.js');
 
     // Add --app parameter to specify the CDK app location
     const cdkArgs = ['cdk', '--app', `node ${cdkApp}`, ...args];

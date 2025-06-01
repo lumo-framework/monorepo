@@ -15,6 +15,7 @@ export class EnhancedDevLogger {
   private originalConsoleLog?: typeof console.log;
   private originalConsoleError?: typeof console.error;
   private originalConsoleWarn?: typeof console.warn;
+  private shutdownCallback?: () => Promise<void>;
 
   constructor(verbose: boolean = false) {
     this.verbose = verbose;
@@ -26,6 +27,11 @@ export class EnhancedDevLogger {
 
   setPort(port: number): void {
     this.port = port;
+  }
+
+  setShutdownCallback(callback: () => Promise<void>): void {
+    this.shutdownCallback = callback;
+    this.metricsDisplay.setShutdownCallback(callback);
   }
 
   startDisplay(): void {
@@ -83,8 +89,17 @@ export class EnhancedDevLogger {
   }
 
   error(message: string): void {
-    this.stopDisplay();
-    log.error(message);
+    // Only stop display for critical startup/shutdown errors
+    if (
+      message.includes('Failed to start dev server') ||
+      message.includes('Failed to scan')
+    ) {
+      this.stopDisplay();
+      log.error(message);
+    } else {
+      // For request handling errors, just log to the metrics display
+      this.metricsDisplay.addLog('error', message, [message]);
+    }
   }
 
   warn(message: string): void {
@@ -112,10 +127,10 @@ export class EnhancedDevLogger {
   async logRequestWithMetrics(
     method: string,
     path: string,
-    statusCode: number,
     requestHandler: () => Promise<unknown>
   ): Promise<unknown> {
     const routeKey = `${method}:${path}`;
+    let statusCode = 200;
 
     // Set the route context for log capture
     this.metricsDisplay.setRouteContext(routeKey);
@@ -129,30 +144,72 @@ export class EnhancedDevLogger {
       routeKey
     );
 
-    const { result, metrics } =
-      await this.performanceTracker.executeWithMetrics(
-        requestHandler,
+    try {
+      const { result, metrics } =
+        await this.performanceTracker.executeWithMetrics(
+          requestHandler,
+          routeKey
+        );
+
+      // Extract status code from result if available
+      if (result && typeof result === 'object' && 'statusCode' in result) {
+        statusCode = (result as { statusCode: number }).statusCode;
+      }
+
+      // Clear the route context
+      this.metricsDisplay.setRouteContext(undefined);
+
+      // Update metrics display
+      this.metricsDisplay.updateRouteMetrics(method, path, metrics, statusCode);
+
+      // Legacy verbose logging (only when display is not active)
+      if (this.verbose && !this.displayActive) {
+        const methodColor = this.getMethodColor(method);
+        const statusColor = this.getStatusColor(statusCode);
+        const prefix = chalk.blue('[API]');
+
+        console.log(
+          `${prefix} ${methodColor(method.padEnd(6))} ${path} -> ${statusColor(String(statusCode))} ${chalk.blackBright(`(${Math.round(metrics.wallTime)}ms)`)}`
+        );
+      }
+
+      return result;
+    } catch (error) {
+      statusCode = 500;
+
+      // Clear the route context
+      this.metricsDisplay.setRouteContext(undefined);
+
+      // Create error metrics for display
+      const errorMetrics = {
+        wallTime: 0,
+        memoryUsed: 0,
+        cpuTime: 0,
+        cpuEfficiency: 0,
+        estimatedLambdaCost: 0,
+        estimatedLambdaTime: '~0ms',
+        timestamp: new Date(),
+      };
+
+      // Update metrics display with error status
+      this.metricsDisplay.updateRouteMetrics(
+        method,
+        path,
+        errorMetrics,
+        statusCode
+      );
+
+      // Log the error to metrics display
+      this.metricsDisplay.addLog(
+        'error',
+        `Error in ${routeKey}: ${error instanceof Error ? error.message : String(error)}`,
+        [error],
+        undefined,
         routeKey
       );
 
-    // Clear the route context
-    this.metricsDisplay.setRouteContext(undefined);
-
-    // Update metrics display
-    this.metricsDisplay.updateRouteMetrics(method, path, metrics, statusCode);
-
-    // Legacy verbose logging (only when display is not active)
-    if (this.verbose && !this.displayActive) {
-      const methodColor = this.getMethodColor(method);
-      const statusColor = this.getStatusColor(statusCode);
-      const prefix = chalk.blue('[API]');
-
-      console.log(
-        `${prefix} ${methodColor(method.padEnd(6))} ${path} -> ${statusColor(String(statusCode))} ${chalk.blackBright(`(${Math.round(metrics.wallTime)}ms)`)}`
-      );
+      throw error;
     }
-
-    return result;
   }
 
   async logEventWithMetrics(
@@ -360,10 +417,8 @@ export class EnhancedDevLogger {
       // Capture error logs for metrics display
       this.metricsDisplay.addLog('error', this.formatLogMessage(args), args);
 
-      // Always allow errors through
-      if (this.originalConsoleError) {
-        this.originalConsoleError.apply(console, args);
-      }
+      // Don't let errors leak outside the table display when active
+      // They will be shown in logs mode or when display is stopped
     };
 
     console.warn = (...args: unknown[]) => {

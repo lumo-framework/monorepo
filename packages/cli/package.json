@@ -1,6 +1,6 @@
 {
   "name": "@tsc-run/cli",
-  "version": "0.5.0-alpha.5",
+  "version": "0.6.0-alpha.1",
   "description": "Command-line interface for the tsc-run TypeScript serverless framework",
   "repository": {
     "type": "git",
@@ -16,6 +16,7 @@
     "cli"
   ],
   "license": "MIT",
+  "type": "module",
   "main": "dist/index.js",
   "bin": {
     "tsc-run": "dist/index.js"
@@ -35,6 +36,9 @@
     "@tsc-run/adapter-aws": "workspace:*",
     "@tsc-run/core": "workspace:*",
     "@tsc-run/utils": "workspace:*",
+    "aws-cdk": "^2.0.0",
+    "aws-cdk-lib": "^2.0.0",
+    "constructs": "^10.0.0",
     "chalk": "^4.1.2",
     "chokidar": "^4.0.0",
     "cli-table3": "^0.6.5",
