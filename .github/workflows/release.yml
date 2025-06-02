@@ -67,6 +67,13 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+      - name: Publish @tsc-run/adapter-cloudflare
+        run: |
+          cd packages/adapter-cloudflare
+          pnpm publish --tag ${{ steps.npm-tag.outputs.tag }} --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
       - name: Publish @tsc-run/cli
         run: |
           cd packages/cli
@@ -85,6 +92,7 @@ jobs:
           npm dist-tag add @tsc-run/utils@${VERSION} latest
           npm dist-tag add @tsc-run/core@${VERSION} latest
           npm dist-tag add @tsc-run/adapter-aws@${VERSION} latest
+          npm dist-tag add @tsc-run/adapter-cloudflare@${VERSION} latest
           npm dist-tag add @tsc-run/cli@${VERSION} latest
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
