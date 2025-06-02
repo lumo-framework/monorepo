@@ -1,6 +1,6 @@
 {
   "name": "tsc-run",
-  "version": "0.6.0-alpha.1",
+  "version": "0.7.0-next.1",
   "type": "module",
   "workspaces": [
     "packages/*"
@@ -29,5 +29,8 @@
   },
   "homepage": "https://docs.tsc.run",
   "description": "TypeScript serverless framework that compiles routes and event subscribers into AWS Lambda functions",
-  "license": "MIT"
+  "license": "MIT",
+  "publishConfig": {
+    "tag": "next"
+  }
 }

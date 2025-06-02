@@ -16,7 +16,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '22'
           registry-url: 'https://registry.npmjs.org'
 
       - name: Setup pnpm
@@ -71,5 +71,20 @@ jobs:
         run: |
           cd packages/cli
           pnpm publish --tag ${{ steps.npm-tag.outputs.tag }} --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Update latest tag for stable releases
+        if: steps.npm-tag.outputs.tag == 'latest'
+        run: |
+          # Extract version from release tag (remove 'v' prefix if present)
+          VERSION="${{ github.event.release.tag_name }}"
+          VERSION="${VERSION#v}"
+
+          # Update latest tag for all packages
+          npm dist-tag add @tsc-run/utils@${VERSION} latest
+          npm dist-tag add @tsc-run/core@${VERSION} latest
+          npm dist-tag add @tsc-run/adapter-aws@${VERSION} latest
+          npm dist-tag add @tsc-run/cli@${VERSION} latest
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

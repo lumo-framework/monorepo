@@ -2,8 +2,16 @@ import { spawn } from 'child_process';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { setInterval, clearInterval } from 'timers';
+import { glob } from 'glob';
+import path from 'path';
 import type { config } from '@tsc-run/core';
 import type { LogMethods } from '@tsc-run/utils';
+import {
+  ProgressDisplay,
+  showBootstrapProgress,
+  showInfrastructureDeploymentProgress,
+  DEPLOYMENT_ICONS,
+} from '@tsc-run/utils';
 import { toPascalCase, generateStackName } from './utils.js';
 
 export interface DomainInfo {
@@ -15,10 +23,11 @@ export interface DomainInfo {
 }
 
 export interface DeploymentResult {
-  url: string;
-  apiGatewayUrl: string | null;
-  customDomainUrl: string | null;
   provider: string;
+  success?: boolean;
+  url?: string;
+  errors?: string[];
+  warnings?: string[];
   domain?: DomainInfo;
 }
 
@@ -57,7 +66,7 @@ function extractCustomDomainUrl(
   projectName: string,
   environment: string
 ): string | null {
-  if (!config.domain) {
+  if (!config.domainName) {
     return null;
   }
 
@@ -78,7 +87,7 @@ function extractCustomDomainUrl(
   }
 
   // Fallback: construct URL from config if domain name is available
-  return config.domain.name ? `https://${config.domain.name}` : null;
+  return `https://${config.domainName}`;
 }
 
 function addDomainInfo(
@@ -88,58 +97,116 @@ function addDomainInfo(
   projectName: string,
   environment: string
 ): void {
-  if (!config.domain) {
+  if (!config.domainName) {
     return;
   }
 
   deploymentResult.domain = {
-    name: config.domain.name,
-    type: config.domain.type,
+    name: config.domainName,
+    type: 'managed',
   };
 
   const domainStackName = generateStackName(projectName, environment, 'Domain');
 
-  // Add setup instructions for subdomain delegation
-  if (config.domain.type === 'subdomain') {
-    const nsPattern = `${domainStackName}\\.SubdomainNameServers = ([^\\s]+)`;
-    const nsOutputs = result.match(new RegExp(nsPattern));
-    if (nsOutputs) {
-      deploymentResult.domain.nameServers = nsOutputs[1].split(',');
-      deploymentResult.domain.setupInstructions = `Add these NS records for ${config.domain.name} in your parent domain's DNS`;
-    }
-  }
-
-  // Add external DNS setup instructions
-  if (config.domain.type === 'external') {
-    const cnamePattern = `${domainStackName}\\.CNAMETarget = ([^\\s]+)`;
-    const cnameOutputs = result.match(new RegExp(cnamePattern));
-    if (cnameOutputs) {
-      deploymentResult.domain.cnameTarget = cnameOutputs[1];
-      deploymentResult.domain.setupInstructions = `Create a CNAME record for ${config.domain.name} pointing to ${cnameOutputs[1]}`;
-    }
+  // Add setup instructions for hosted zone
+  const nsPattern = `${domainStackName}\\.HostedZoneNameServers = ([^\\s]+)`;
+  const nsOutputs = result.match(new RegExp(nsPattern));
+  if (nsOutputs) {
+    deploymentResult.domain.nameServers = nsOutputs[1].split(',');
+    deploymentResult.domain.setupInstructions = `Update nameservers for ${config.domainName} to point to AWS Route 53`;
   }
 }
 
-export async function deployToAws(config: config.Config, logger?: LogMethods) {
-  try {
-    // Run CDK bootstrap if needed
-    if (logger) {
-      await logger.spinner('🔧 Bootstrapping CDK', () =>
-        runCdkCommand(['bootstrap'], false)
-      );
-    } else {
-      await runCdkCommand(['bootstrap']);
+interface FunctionInfo {
+  name: string;
+  path: string;
+}
+
+async function scanBuiltFunctions(): Promise<{
+  routes: FunctionInfo[];
+  subscribers: FunctionInfo[];
+}> {
+  const routes: FunctionInfo[] = [];
+  const subscribers: FunctionInfo[] = [];
+
+  // Scan for route functions (support both .js and .mjs extensions)
+  const routeFiles = await glob('dist/functions/**/index.{js,mjs}');
+  for (const filePath of routeFiles) {
+    // Skip subscriber functions which are in the subscribers subdirectory
+    if (filePath.includes('/subscribers/')) {
+      continue;
     }
 
+    // Extract route path from the file path structure
+    const relativePath = path.relative('dist/functions', filePath);
+    const pathParts = relativePath.split(path.sep);
+    // Remove the 'index.mjs' part and join with '/' to match build naming
+    const routeName = pathParts.slice(0, -1).join('/');
+
+    routes.push({
+      name: routeName,
+      path: filePath,
+    });
+  }
+
+  // Scan for subscriber functions (support both .js and .mjs extensions)
+  const subscriberFiles = await glob(
+    'dist/functions/subscribers/*/index.{js,mjs}'
+  );
+  for (const filePath of subscriberFiles) {
+    const subscriberName = path.basename(path.dirname(filePath));
+
+    subscribers.push({
+      name: subscriberName,
+      path: filePath,
+    });
+  }
+
+  return { routes, subscribers };
+}
+
+export async function deployToAws(config: config.Config, _logger?: LogMethods) {
+  const progress = new ProgressDisplay();
+
+  try {
+    // Scan built functions to show meaningful progress
+    const { routes, subscribers } = await scanBuiltFunctions();
+
+    progress.addItem('Bootstrap', 1);
+    if (routes.length > 0) {
+      progress.addItem('Routes', routes.length);
+    }
+    if (subscribers.length > 0) {
+      progress.addItem('Subscribers', subscribers.length);
+    }
+    if (
+      config.events?.subscribers &&
+      Object.keys(config.events.subscribers).length > 0
+    ) {
+      progress.addItem('Queue', 1);
+    }
+    progress.render();
+
+    // Run CDK bootstrap if needed
+    showBootstrapProgress(progress, 'Bootstrapping CDK environment...');
+
+    await runCdkCommand(['bootstrap'], false);
+    progress.updateItem('Bootstrap', 1);
+    progress.render();
+
     // Deploy the stack
-    const result = logger
-      ? await logger.spinner('☁️ Deploying infrastructure', () =>
-          runCdkCommand(
-            ['deploy', '--require-approval', 'never', '--all'],
-            false
-          )
-        )
-      : await runCdkCommand(['deploy', '--require-approval', 'never', '--all']);
+    showInfrastructureDeploymentProgress(
+      progress,
+      'Deploying infrastructure stacks...'
+    );
+
+    const result = await runCdkCommand(
+      ['deploy', '--require-approval', 'never', '--all'],
+      false,
+      progress,
+      routes.length,
+      subscribers.length
+    );
 
     const projectName = config.projectName;
     const environment = config.environment;
@@ -158,33 +225,51 @@ export async function deployToAws(config: config.Config, logger?: LogMethods) {
     );
 
     // Primary URL (custom domain if available, otherwise API Gateway)
-    const primaryUrl = customDomainUrl || apiGatewayUrl || 'URL not found';
+    const primaryUrl = customDomainUrl || apiGatewayUrl;
 
     const deploymentResult: DeploymentResult = {
-      url: primaryUrl,
-      apiGatewayUrl,
-      customDomainUrl,
       provider: 'aws',
+      url: primaryUrl || undefined,
     };
+
+    // Mark all deployment items as complete
+    if (routes.length > 0) {
+      progress.updateItem('Routes', routes.length);
+    }
+    if (subscribers.length > 0) {
+      progress.updateItem('Subscribers', subscribers.length);
+    }
+    if (
+      config.events?.subscribers &&
+      Object.keys(config.events.subscribers).length > 0
+    ) {
+      progress.updateItem('Queue', 1);
+    }
+
+    // Clear any status message before showing completion
+    progress.clearStatus();
+    progress.render();
 
     // Add domain-specific information if domain is configured
     addDomainInfo(deploymentResult, result, config, projectName, environment);
 
+    // Complete progress display
+    progress.complete(DEPLOYMENT_ICONS.SUCCESS, 'Deployment complete!');
+
     return deploymentResult;
   } catch (error) {
-    if (logger) {
-      logger.error('CDK deployment failed');
-      logger.error(error instanceof Error ? error.message : String(error));
-    } else {
-      console.error('CDK deployment failed:', error);
-    }
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    progress.error(`Deployment failed: ${errorMsg}`);
     throw error;
   }
 }
 
 async function runCdkCommand(
   args: string[],
-  showProgress: boolean = true
+  showProgress: boolean = true,
+  progressDisplay?: ProgressDisplay,
+  _routeCount: number = 0,
+  _subscriberCount: number = 0
 ): Promise<string> {
   // showProgress = true: use built-in spinner and show CDK output
   // showProgress = false: suppress all output (external spinner handles progress)

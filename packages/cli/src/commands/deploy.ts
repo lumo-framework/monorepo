@@ -36,12 +36,16 @@ async function checkDomainReady(domainName: string): Promise<boolean> {
 
 async function promptForDomainSetup(config: config.Config): Promise<boolean> {
   // Check if domain configuration exists and requires DNS setup
-  if (!config.domain || config.domain.type === 'external') {
+  if (!config.domainName) {
     return true; // No prompt needed
   }
 
-  const domainName = config.domain.name;
-  const domainType = config.domain.type;
+  const domainName = config.domainName;
+
+  // Skip prompt for Cloudflare when domainName is set - setup is automatic
+  if (config.provider === 'cloudflare') {
+    return true;
+  }
 
   // Check if the domain is already resolving (likely already configured)
   const isDomainReady = await checkDomainReady(domainName);
@@ -53,19 +57,9 @@ async function promptForDomainSetup(config: config.Config): Promise<boolean> {
   log.heading('\nDomain & SSL Certificate Setup Required');
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
-  if (domainType === 'subdomain') {
-    log.info(`🌐 Subdomain: ${domainName}`);
-    log.warn('During deployment, you will need to:');
-    console.log(
-      '   1. Copy the NS (Name Server) records from the deployment output or during deployment'
-    );
-    console.log("   2. Add these NS records to your domain's DNS settings");
-    console.log('   3. Wait for DNS propagation (may take a few minutes)');
-    console.log(
-      '   4. SSL certificate will be automatically validated via DNS once NS records are active'
-    );
-  } else if (domainType === 'hosted-zone') {
-    log.info(`🌐 Domain: ${domainName}`);
+  log.info(`🌐 Domain: ${domainName}`);
+
+  if (config.provider === 'aws') {
     log.warn('During deployment, you will need to:');
     console.log(
       "   1. Update your domain's name servers to point to AWS Route 53"
@@ -76,6 +70,18 @@ async function promptForDomainSetup(config: config.Config): Promise<boolean> {
     );
     console.log(
       '   4. SSL certificate will be automatically validated via DNS once NS records are active'
+    );
+  } else if (config.provider === 'cloudflare') {
+    log.warn('Requirements for Cloudflare domain setup:');
+    console.log(
+      `   1. Domain ${domainName} must be added to your Cloudflare account`
+    );
+    console.log("   2. Domain's name servers must point to Cloudflare");
+    console.log(
+      '   3. CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID must be set'
+    );
+    console.log(
+      '   4. SSL certificate and DNS records will be automatically managed'
     );
   }
 
@@ -121,7 +127,7 @@ export const deployCommand: CommandModule = {
 
       // Check if a build exists before attempting deployment
       try {
-        await fs.access('dist/lambdas');
+        await fs.access('dist/functions');
       } catch {
         log.error('No build found!');
         log.warn('You need to build your project before deploying.');
@@ -135,10 +141,16 @@ export const deployCommand: CommandModule = {
         if (!shouldContinue) {
           process.exit(0);
         }
-      } else if (config.domain && config.domain.type !== 'external') {
+      } else if (config.domainName) {
         // Show an informational message when using --force with domain config
         log.info('⚡ Using --force flag: Skipping domain setup confirmation');
-        log.info('📋 Remember to configure DNS settings after deployment');
+        if (config.provider === 'aws') {
+          log.info('📋 Remember to configure DNS settings after deployment');
+        } else if (config.provider === 'cloudflare') {
+          log.info(
+            '📋 Ensure domain is added to Cloudflare account and API tokens are set'
+          );
+        }
       }
 
       const result = await deploy(config, log);

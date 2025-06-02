@@ -1,6 +1,6 @@
 {
   "name": "@tsc-run/adapter-aws",
-  "version": "0.6.0-alpha.1",
+  "version": "0.7.0-next.1",
   "description": "AWS Lambda runtime adapter for tsc-run framework",
   "repository": {
     "type": "git",
@@ -9,7 +9,8 @@
   },
   "exports": {
     ".": "./dist/index.js",
-    "./secret-resolver": "./dist/secret-resolver.js"
+    "./secret-resolver": "./dist/secret-resolver.js",
+    "./event-dispatcher": "./dist/event-dispatcher.js"
   },
   "homepage": "https://docs.tsc.run",
   "keywords": [
@@ -34,6 +35,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@aws-sdk/client-eventbridge": "^3.817.0",
     "@aws-sdk/client-ssm": "^3.817.0",
     "@tsc-run/core": "workspace:*",
     "@tsc-run/utils": "workspace:*"
@@ -42,5 +44,8 @@
     "@types/aws-lambda": "^8.10.0",
     "@types/node": "^20.0.0",
     "typescript": "^5.0.0"
+  },
+  "publishConfig": {
+    "tag": "next"
   }
 }

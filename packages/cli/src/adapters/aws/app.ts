@@ -64,7 +64,7 @@ async function main() {
   appStack.addDependency(networkingStack);
 
   // Create DomainStack if domain configuration is provided
-  if (config.domain) {
+  if (config.domainName) {
     const domainStackName = generateStackName(
       config.projectName,
       config.environment,

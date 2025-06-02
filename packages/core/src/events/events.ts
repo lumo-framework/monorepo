@@ -1,45 +1,24 @@
-import process from 'process';
-
 export type Event<T = unknown> = {
   type: string;
   data: T;
 };
 
-export const emit = async (type: string, data: unknown) => {
-  // Check if running in AWS Lambda environment with EventBridge
-  if (
-    typeof process !== 'undefined' &&
-    process.env &&
-    process.env.EVENT_BUS_NAME
-  ) {
-    try {
-      const { EventBridgeClient, PutEventsCommand } = await import(
-        '@aws-sdk/client-eventbridge'
-      );
+export type EventDispatcher = (type: string, data: unknown) => Promise<void>;
 
-      const eventBridgeClient = new EventBridgeClient({});
+// Default event dispatcher (console logging for development)
+let eventDispatcher: EventDispatcher = async (_: string, __: unknown) => {};
 
-      await eventBridgeClient.send(
-        new PutEventsCommand({
-          Entries: [
-            {
-              Source: 'tsc-run',
-              DetailType: type,
-              Detail: JSON.stringify(data),
-              EventBusName: process.env.EVENT_BUS_NAME,
-            },
-          ],
-        })
-      );
+/**
+ * Set the event dispatcher implementation
+ * This should be called by the runtime adapter during initialisation
+ */
+export const setEventDispatcher = (dispatcher: EventDispatcher): void => {
+  eventDispatcher = dispatcher;
+};
 
-      console.log('Event dispatched to EventBridge', type, data);
-    } catch (error) {
-      console.error('Failed to dispatch event to EventBridge:', error);
-      // Fallback to console logging
-      console.log('Event dispatched (fallback)', type, data);
-    }
-  } else {
-    // Local development or no EventBridge configured
-    console.log('Event dispatched', type, data);
-  }
+/**
+ * Emit an event using the configured dispatcher
+ */
+export const emit = async (type: string, data: unknown): Promise<void> => {
+  await eventDispatcher(type, data);
 };

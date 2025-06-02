@@ -37,11 +37,7 @@ describe('defineConfig', () => {
       environment: 'prod',
       provider: 'aws',
       region: 'us-west-2',
-      domain: {
-        name: 'example.com',
-        type: 'hosted-zone',
-        certificate: { create: true },
-      },
+      domainName: 'example.com',
       networking: {
         natGateways: 2,
       },
@@ -77,7 +73,7 @@ describe('defineConfig', () => {
     assert.strictEqual(result.environment, 'prod');
     assert.strictEqual(result.provider, 'aws');
     assert.strictEqual(result.region, 'us-west-2');
-    assert.strictEqual(result.domain?.name, 'example.com');
+    assert.strictEqual(result.domainName, 'example.com');
     assert.strictEqual(result.networking?.natGateways, 2);
     assert.deepStrictEqual(result.build?.exclude, ['*.test.ts']);
     assert.strictEqual(result.secrets?.['api-key']?.value, 'secret-value');
@@ -137,38 +133,17 @@ describe('defineConfig', () => {
     );
   });
 
-  test('should work with domain certificate configurations', () => {
-    const configWithCreateCert: Config = {
-      projectName: 'cert-create-test',
+  test('should work with domain configurations', () => {
+    const configWithDomain: Config = {
+      projectName: 'domain-test',
       environment: 'test',
       provider: 'aws',
-      domain: {
-        name: 'test.com',
-        type: 'subdomain',
-        certificate: { create: true },
-      },
+      domainName: 'api.example.com',
     };
 
-    const configWithArnCert: Config = {
-      projectName: 'cert-arn-test',
-      environment: 'test',
-      provider: 'aws',
-      domain: {
-        name: 'test.com',
-        type: 'external',
-        certificate: {
-          arn: 'arn:aws:acm:us-east-1:123456789012:certificate/12345678-1234-1234-1234-123456789012',
-        },
-      },
-    };
+    const result = defineConfig(configWithDomain);
 
-    const result1 = defineConfig(configWithCreateCert);
-    const result2 = defineConfig(configWithArnCert);
-
-    assert.deepStrictEqual(result1.domain?.certificate, { create: true });
-    assert.deepStrictEqual(result2.domain?.certificate, {
-      arn: 'arn:aws:acm:us-east-1:123456789012:certificate/12345678-1234-1234-1234-123456789012',
-    });
+    assert.strictEqual(result.domainName, 'api.example.com');
   });
 
   test('should maintain type safety for provider enum', () => {
