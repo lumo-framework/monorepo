@@ -47,12 +47,45 @@ jobs:
           fi
           echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
 
-          # Update all package.json files
-          pnpm version $NEW_VERSION --no-git-tag-version
-          cd packages/utils && pnpm version $NEW_VERSION --no-git-tag-version
-          cd ../core && pnpm version $NEW_VERSION --no-git-tag-version
-          cd ../adapter-aws && pnpm version $NEW_VERSION --no-git-tag-version
-          cd ../cli && pnpm version $NEW_VERSION --no-git-tag-version
+          # Update version in all package.json files using node
+          node -e "
+            const fs = require('fs');
+            const version = '$NEW_VERSION';
+            const files = [
+              './package.json',
+              './packages/utils/package.json',
+              './packages/core/package.json',
+              './packages/adapter-aws/package.json',
+              './packages/adapter-cloudflare/package.json',
+              './packages/cli/package.json'
+            ];
+            files.forEach(file => {
+              if (fs.existsSync(file)) {
+                const pkg = JSON.parse(fs.readFileSync(file, 'utf8'));
+                pkg.version = version;
+                fs.writeFileSync(file, JSON.stringify(pkg, null, 2) + '\n');
+              }
+            });
+          "
+
+      - name: Update workspace dependencies
+        run: |
+          # Update workspace:* dependencies to actual versions
+          cd packages/core
+          sed -i "s/\"@tsc-run\/utils\": \"workspace:\*\"/\"@tsc-run\/utils\": \"$NEW_VERSION\"/" package.json
+          
+          cd ../adapter-aws
+          sed -i "s/\"@tsc-run\/core\": \"workspace:\*\"/\"@tsc-run\/core\": \"$NEW_VERSION\"/" package.json
+          sed -i "s/\"@tsc-run\/utils\": \"workspace:\*\"/\"@tsc-run\/utils\": \"$NEW_VERSION\"/" package.json
+          
+          cd ../adapter-cloudflare
+          sed -i "s/\"@tsc-run\/core\": \"workspace:\*\"/\"@tsc-run\/core\": \"$NEW_VERSION\"/" package.json
+          sed -i "s/\"@tsc-run\/utils\": \"workspace:\*\"/\"@tsc-run\/utils\": \"$NEW_VERSION\"/" package.json
+          
+          cd ../cli
+          sed -i "s/\"@tsc-run\/adapter-aws\": \"workspace:\*\"/\"@tsc-run\/adapter-aws\": \"$NEW_VERSION\"/" package.json
+          sed -i "s/\"@tsc-run\/core\": \"workspace:\*\"/\"@tsc-run\/core\": \"$NEW_VERSION\"/" package.json
+          sed -i "s/\"@tsc-run\/utils\": \"workspace:\*\"/\"@tsc-run\/utils\": \"$NEW_VERSION\"/" package.json
 
       - name: Publish @tsc-run/utils
         run: |
