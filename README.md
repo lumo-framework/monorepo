@@ -1,5 +1,5 @@
 <h1 align="center">
-  <p align="center"><a href="https://docs.tsc.run" target="_blank"><img src="https://www.tsc.run/tsc-logo.svg" width="200" alt="tsc.run Logo"></a></p>
+  <p align="center"><a href="https://tsc.run" target="_blank"><img src="https://tsc.run/tsc-mascot.png" width="200" alt="tsc.run Logo"></a></p>
   tsc.run - CLI / Adapters / Core
 </h1>
 
@@ -29,7 +29,7 @@ We use a single GitHub project to track all issues across tsc.run, you can find 
 
 ## Documentation
 
-Visit [docs.tsc.run](https://docs.tsc.run)
+Visit [tsc.run](https://tsc.run)
 
 ## License
 

@@ -10,7 +10,7 @@ The project consists of multiple repositories:
 
 - **Monorepo**: The tsc.run CLI, Core framework and cloud adapters.
 - **tsc.run**: The example app for new tsc.run projects.
-- **Documentation Site**: The docs.tsc.run website and developer guides.
+- **Documentation Site**: The tsc.run website and developer guides.
 
 ## Ways to Contribute
 
@@ -218,7 +218,7 @@ Don't hesitate to ask questions about serverless development with tsc.run:
 
 - Open a GitHub Discussion for architecture and usage questions
 - Reach out to maintainers in existing issues
-- Check our comprehensive documentation at docs.tsc.run
+- Check our comprehensive documentation at https://tsc.run.
 - Browse example projects in our repository
 
 Thank you for contributing to tsc.run!

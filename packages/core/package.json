@@ -7,7 +7,7 @@
     "url": "https://github.com/tsc-run/cli.git",
     "directory": "packages/core"
   },
-  "homepage": "https://docs.tsc.run",
+  "homepage": "https://tsc.run",
   "keywords": [
     "typescript",
     "serverless",

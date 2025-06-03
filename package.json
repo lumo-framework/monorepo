@@ -27,7 +27,7 @@
     "type": "git",
     "url": "https://github.com/tsc-run/monorepo.git"
   },
-  "homepage": "https://docs.tsc.run",
+  "homepage": "https://tsc.run",
   "description": "TypeScript serverless framework that compiles routes and event subscribers into AWS Lambda functions",
   "license": "MIT",
   "publishConfig": {

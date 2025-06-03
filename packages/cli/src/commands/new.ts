@@ -79,7 +79,7 @@ export const newCommand: CommandModule<object, NewCommandArgs> = {
       console.log('\n🎯 \x1b[1mNext steps:\x1b[0m');
       console.log(`   cd ${projectName}`);
       console.log('   npm run dev');
-      console.log('\n📚 Learn more at \x1b[36mhttps://docs.tsc.run\x1b[0m\n');
+      console.log('\n📚 Learn more at \x1b[36mhttps://tsc.run\x1b[0m\n');
     } catch (error) {
       console.error('\n❌ \x1b[1m\x1b[31mFailed to create project!\x1b[0m');
       console.error(

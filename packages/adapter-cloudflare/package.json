@@ -12,7 +12,7 @@
     "./secret-resolver": "./dist/secret-resolver.js",
     "./event-dispatcher": "./dist/event-dispatcher.js"
   },
-  "homepage": "https://docs.tsc.run",
+  "homepage": "https://tsc.run",
   "keywords": [
     "typescript",
     "serverless",
