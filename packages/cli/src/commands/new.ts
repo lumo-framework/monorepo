@@ -9,7 +9,7 @@ interface NewCommandArgs {
 
 export const newCommand: CommandModule<object, NewCommandArgs> = {
   command: 'new <projectName>',
-  describe: 'Create a new tsc-run project from the template.',
+  describe: 'Create a new Lumo project from the template.',
   builder: (yargs) => {
     return yargs.positional('projectName', {
       type: 'string',
@@ -22,7 +22,7 @@ export const newCommand: CommandModule<object, NewCommandArgs> = {
 
     try {
       console.log(
-        `🚀 \x1b[1mCreating new tsc-run project: \x1b[36m${projectName}\x1b[0m\n`
+        `🚀 \x1b[1mCreating new Lumo project: \x1b[36m${projectName}\x1b[0m\n`
       );
 
       // Check if directory already exists
@@ -39,7 +39,7 @@ export const newCommand: CommandModule<object, NewCommandArgs> = {
       // Clone the template repository
       console.log('📦 Cloning template repository...');
       execSync(
-        `git clone https://github.com/tsc-run/tsc.run.git "${projectName}"`,
+        `git clone https://github.com/Lumo/tsc.run.git "${projectName}"`,
         {
           stdio: 'inherit',
         }

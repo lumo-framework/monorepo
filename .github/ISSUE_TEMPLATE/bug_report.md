@@ -13,8 +13,8 @@ assignees: mrbenosborne
 Before filling out this template, please check where your issue belongs:
 
 - **🔧 CLI, adapters, or core framework issues** → Continue here ✅
-- **📚 Documentation issues** → Report in [tsc-run/docs](https://github.com/tsc-run/docs/issues/new)
-- **📋 Template-specific issues** (starter configs, example files) → Report in [tsc-run/tsc-run](https://github.com/tsc-run/tsc-run/issues/new)
+- **📚 Documentation issues** → Report in [lumo-framework/docs](https://github.com/lumo-framework/docs/issues/new)
+- **📋 Template-specific issues** (starter configs, example files) → Report in [lumo-framework/tsc-run](https://github.com/lumo-framework/lumo-framework/issues/new)
 - **❓ Not sure?** → Continue here and we'll triage it for you
 
 ---

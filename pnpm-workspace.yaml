@@ -1,4 +1,2 @@
 packages:
   - packages/*
-overrides:
-  adapter-aws: link:../../../Library/pnpm/global/5/node_modules/@tsc-rub/adapter-aws

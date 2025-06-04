@@ -61,19 +61,19 @@ export async function bundleRoute(
           'data:text/javascript,export default { from: (data) => data }; export const Buffer = { from: (data) => data };',
 
         // Alias adapter packages to their built versions in development
-        '@tsc-run/adapter-cloudflare': path.resolve(
+        '@lumo-framework/adapter-cloudflare': path.resolve(
           __dirname,
           '../../../adapter-cloudflare/dist/index.js'
         ),
-        '@tsc-run/adapter-cloudflare/secret-resolver': path.resolve(
+        '@lumo-framework/adapter-cloudflare/secret-resolver': path.resolve(
           __dirname,
           '../../../adapter-cloudflare/dist/secret-resolver.js'
         ),
-        '@tsc-run/adapter-cloudflare/queue-adapter': path.resolve(
+        '@lumo-framework/adapter-cloudflare/queue-adapter': path.resolve(
           __dirname,
           '../../../adapter-cloudflare/dist/queue-adapter.js'
         ),
-        '@tsc-run/adapter-cloudflare/event-dispatcher': path.resolve(
+        '@lumo-framework/adapter-cloudflare/event-dispatcher': path.resolve(
           __dirname,
           '../../../adapter-cloudflare/dist/event-dispatcher.js'
         ),
