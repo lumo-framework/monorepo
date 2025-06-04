@@ -5,7 +5,7 @@ import { existsSync } from 'fs';
 
 export async function loadConfig(configPath?: string) {
   // Try different config file names in order of preference
-  const configNames = configPath ? [configPath] : ['tsc-run.config.js'];
+  const configNames = configPath ? [configPath] : ['lumo.config.js'];
 
   let fullPath: string | null = null;
   for (const name of configNames) {
