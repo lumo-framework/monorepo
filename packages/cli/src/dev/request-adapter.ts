@@ -2,7 +2,7 @@ import type {
   Request as ExpressRequest,
   Response as ExpressResponse,
 } from 'express';
-import { http } from '@tsc-run/core';
+import { http } from '@lumo-framework/core';
 
 type Request = http.Request;
 type Response = http.Response;

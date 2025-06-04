@@ -1,13 +1,13 @@
 {
-  "name": "@tsc-run/cli",
-  "version": "0.7.0-next.3",
-  "description": "Command-line interface for the tsc-run TypeScript serverless framework",
+  "name": "@lumo-framework/cli",
+  "version": "0.1.0-alpha.1",
+  "description": "Command-line interface for the Lumo Framework TypeScript serverless framework",
   "repository": {
     "type": "git",
-    "url": "https://github.com/tsc-run/cli.git",
+    "url": "https://github.com/lumo-framework/monorepo.git",
     "directory": "packages/cli"
   },
-  "homepage": "https://tsc.run",
+  "homepage": "https://lumo-framework.dev",
   "keywords": [
     "typescript",
     "serverless",
@@ -19,7 +19,7 @@
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "tsc-run": "dist/index.js"
+    "lumo": "dist/index.js"
   },
   "files": [
     "dist"
@@ -33,9 +33,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@tsc-run/adapter-aws": "workspace:*",
-    "@tsc-run/core": "workspace:*",
-    "@tsc-run/utils": "workspace:*",
+    "@lumo-framework/adapter-aws": "workspace:*",
+    "@lumo-framework/core": "workspace:*",
+    "@lumo-framework/utils": "workspace:*",
     "aws-cdk": "^2.0.0",
     "aws-cdk-lib": "^2.0.0",
     "buffer": "^6.0.3",

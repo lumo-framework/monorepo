@@ -40,7 +40,7 @@ describe('Build Command Route Scanning', () => {
   test('should scan simple index.ts with GET export', async () => {
     await createTestFiles({
       'functions/api/index.ts': `
-import { response, statusCodes, type Request } from '@tsc-run/core';
+import { response, statusCodes, type Request } from '@lumo-framework/core';
 
 export async function GET(req: Request) {
   return response(statusCodes.OK, { message: 'Hello from root' });
@@ -63,7 +63,7 @@ export async function GET(req: Request) {
   test('should scan users directory with index.ts (GET, POST)', async () => {
     await createTestFiles({
       'functions/api/users/index.ts': `
-import { response, statusCodes, type Request } from '@tsc-run/core';
+import { response, statusCodes, type Request } from '@lumo-framework/core';
 
 export async function GET(req: Request) {
   return response(statusCodes.OK, { users: [] });
@@ -97,7 +97,7 @@ export async function POST(req: Request) {
   test('should scan users create.ts with POST export', async () => {
     await createTestFiles({
       'functions/api/users/create.ts': `
-import { response, statusCodes, type Request } from '@tsc-run/core';
+import { response, statusCodes, type Request } from '@lumo-framework/core';
 
 export async function POST(req: Request) {
   const userData = await req.json();
@@ -121,7 +121,7 @@ export async function POST(req: Request) {
   test('should scan products with multiple HTTP methods', async () => {
     await createTestFiles({
       'functions/api/products/[id].ts': `
-import { response, statusCodes, type Request } from '@tsc-run/core';
+import { response, statusCodes, type Request } from '@lumo-framework/core';
 
 export async function GET(req: Request) {
   return response(statusCodes.OK, { product: { id: req.params.id } });
@@ -154,7 +154,7 @@ export async function DELETE(req: Request) {
   test('should scan route with default export handler', async () => {
     await createTestFiles({
       'functions/api/fallback.ts': `
-import { response, statusCodes, type Request } from '@tsc-run/core';
+import { response, statusCodes, type Request } from '@lumo-framework/core';
 
 export default async function handler(req: Request) {
   return response(statusCodes.OK, { method: req.method, path: req.path });
@@ -177,7 +177,7 @@ export default async function handler(req: Request) {
   test('should scan route with named handler export', async () => {
     await createTestFiles({
       'functions/api/webhook.ts': `
-import { response, statusCodes, type Request } from '@tsc-run/core';
+import { response, statusCodes, type Request } from '@lumo-framework/core';
 
 export async function handler(req: Request) {
   return response(statusCodes.OK, { webhook: 'received' });
@@ -200,7 +200,7 @@ export async function handler(req: Request) {
   test('should scan nested directory structures', async () => {
     await createTestFiles({
       'functions/api/admin/users/permissions.ts': `
-import { response, statusCodes, type Request } from '@tsc-run/core';
+import { response, statusCodes, type Request } from '@lumo-framework/core';
 
 export async function GET(req: Request) {
   return response(statusCodes.OK, { permissions: [] });

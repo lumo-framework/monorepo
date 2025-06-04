@@ -1,6 +1,6 @@
 import type { CommandModule } from 'yargs';
 import { DevServer } from '../dev/dev-server.js';
-import { log } from '@tsc-run/utils';
+import { log } from '@lumo-framework/utils';
 
 export const devCommand: CommandModule = {
   command: 'dev',

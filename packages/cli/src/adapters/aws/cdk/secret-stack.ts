@@ -1,6 +1,6 @@
 import { aws_ssm, Stack, StackProps } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
-import type { config } from '@tsc-run/core';
+import type { config } from '@lumo-framework/core';
 import { toPascalCase } from '../utils.js';
 
 interface SecretStackProps extends StackProps {

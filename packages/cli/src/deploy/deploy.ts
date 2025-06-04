@@ -1,5 +1,5 @@
-import type { config } from '@tsc-run/core';
-import type { LogMethods } from '@tsc-run/utils';
+import type { config } from '@lumo-framework/core';
+import type { LogMethods } from '@lumo-framework/utils';
 
 export async function deploy(config: config.Config, logger?: LogMethods) {
   switch (config.provider) {

@@ -40,10 +40,10 @@ importers:
       '@aws-sdk/client-ssm':
         specifier: ^3.817.0
         version: 3.817.0
-      '@tsc-run/core':
+      '@lumo-framework/core':
         specifier: workspace:*
         version: link:../core
-      '@tsc-run/utils':
+      '@lumo-framework/utils':
         specifier: workspace:*
         version: link:../utils
     devDependencies:
@@ -59,10 +59,10 @@ importers:
 
   packages/adapter-cloudflare:
     dependencies:
-      '@tsc-run/core':
+      '@lumo-framework/core':
         specifier: workspace:*
         version: link:../core
-      '@tsc-run/utils':
+      '@lumo-framework/utils':
         specifier: workspace:*
         version: link:../utils
     devDependencies:
@@ -78,13 +78,13 @@ importers:
 
   packages/cli:
     dependencies:
-      '@tsc-run/adapter-aws':
+      '@lumo-framework/adapter-aws':
         specifier: workspace:*
         version: link:../adapter-aws
-      '@tsc-run/core':
+      '@lumo-framework/core':
         specifier: workspace:*
         version: link:../core
-      '@tsc-run/utils':
+      '@lumo-framework/utils':
         specifier: workspace:*
         version: link:../utils
       aws-cdk:

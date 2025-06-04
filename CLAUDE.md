@@ -35,7 +35,7 @@ cd packages/adapter-aws && pnpm build
 
 ## Architecture Overview
 
-This is a monorepo for `tsc-run`, a TypeScript serverless framework that compiles routes and event subscribers into AWS Lambda functions.
+This is a monorepo for `Lumo Framework`, a TypeScript serverless framework that compiles routes and event subscribers into AWS Lambda functions.
 
 ### Package Structure
 
@@ -45,16 +45,16 @@ This is a monorepo for `tsc-run`, a TypeScript serverless framework that compile
 
 ### Key Concepts
 
-**File-based routing** tsc.run uses file-based routing where your directory structure defines the URL paths, and TypeScript files within those directories handle HTTP methods by exporting named handlers.
+**File-based routing** Lumo Framework uses file-based routing where your directory structure defines the URL paths, and TypeScript files within those directories handle HTTP methods by exporting named handlers.
 
 How it works
 Directories = URL paths
 Files = HTTP method handlers
 Exports = GET, POST, PATCH, DELETE functions
 
-**Subscribers**: Event-driven functions that listen to EventBridge events. Configured in `tsc-run.config.ts` under `events.subscribers` and implemented as files that export a `listen` function.
+**Subscribers**: Event-driven functions that listen to EventBridge events. Configured in `lumo.config.ts` under `events.subscribers` and implemented as files that export a `listen` function.
 
-**Configuration**: Projects use `tsc-run.config.ts` to define provider settings, resources (DynamoDB tables, etc.), and event subscriptions. The config is validated against the Zod schema in `packages/core/src/config/schema.ts`.
+**Configuration**: Projects use `lumo.config.ts` to define provider settings, resources (DynamoDB tables, etc.), and event subscriptions. The config is validated against the Zod schema in `packages/core/src/config/schema.ts`.
 
 ### Build Process
 
@@ -68,7 +68,12 @@ Exports = GET, POST, PATCH, DELETE functions
 Route handlers use the core framework types:
 
 ```typescript
-import { response, statusCodes, type Request, Response } from '@tsc-run/core';
+import {
+  response,
+  statusCodes,
+  type Request,
+  Response,
+} from '@lumo-framework/core';
 
 export async function GET(req: Request): Promise<Response> {
   return response(statusCodes.OK, { message: 'Hello' });

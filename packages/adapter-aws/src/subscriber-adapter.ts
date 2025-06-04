@@ -1,5 +1,5 @@
 import type { EventBridgeEvent } from 'aws-lambda';
-import type { events } from '@tsc-run/core';
+import type { events } from '@lumo-framework/core';
 
 export const subscriberAdapter = (
   handler: (message: events.Event) => Promise<void>

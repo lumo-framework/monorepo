@@ -46,35 +46,35 @@ jobs:
             echo "tag=latest" >> $GITHUB_OUTPUT
           fi
 
-      - name: Publish @tsc-run/utils
+      - name: Publish @lumo-framework/utils
         run: |
           cd packages/utils
           pnpm publish --tag ${{ steps.npm-tag.outputs.tag }} --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish @tsc-run/core
+      - name: Publish @lumo-framework/core
         run: |
           cd packages/core
           pnpm publish --tag ${{ steps.npm-tag.outputs.tag }} --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish @tsc-run/adapter-aws
+      - name: Publish @lumo-framework/adapter-aws
         run: |
           cd packages/adapter-aws
           pnpm publish --tag ${{ steps.npm-tag.outputs.tag }} --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish @tsc-run/adapter-cloudflare
+      - name: Publish @lumo-framework/adapter-cloudflare
         run: |
           cd packages/adapter-cloudflare
           pnpm publish --tag ${{ steps.npm-tag.outputs.tag }} --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish @tsc-run/cli
+      - name: Publish @lumo-framework/cli
         run: |
           cd packages/cli
           pnpm publish --tag ${{ steps.npm-tag.outputs.tag }} --access public --no-git-checks
@@ -89,10 +89,10 @@ jobs:
           VERSION="${VERSION#v}"
 
           # Update latest tag for all packages
-          npm dist-tag add @tsc-run/utils@${VERSION} latest
-          npm dist-tag add @tsc-run/core@${VERSION} latest
-          npm dist-tag add @tsc-run/adapter-aws@${VERSION} latest
-          npm dist-tag add @tsc-run/adapter-cloudflare@${VERSION} latest
-          npm dist-tag add @tsc-run/cli@${VERSION} latest
+          npm dist-tag add @lumo-framework/utils@${VERSION} latest
+          npm dist-tag add @lumo-framework/core@${VERSION} latest
+          npm dist-tag add @lumo-framework/adapter-aws@${VERSION} latest
+          npm dist-tag add @lumo-framework/adapter-cloudflare@${VERSION} latest
+          npm dist-tag add @lumo-framework/cli@${VERSION} latest
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

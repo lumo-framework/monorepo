@@ -1,16 +1,16 @@
-# Contributing to tsc.run (TypeScript Cloud)
+# Contributing to Lumo Framework
 
-Thank you for your interest in contributing to tsc.run! This project aims to make serverless development with TypeScript simple and intuitive through conventions and a standard project layout. We welcome contributions from developers of all skill levels.
+Thank you for your interest in contributing to Lumo Framework! This project aims to make serverless development with TypeScript simple and intuitive through conventions and a standard project layout. We welcome contributions from developers of all skill levels.
 
 ## Project Overview
 
-tsc.run (TypeScript Cloud) is a serverless framework that helps developers build, organise, and deploy serverless applications. The framework follows a "convention over configuration" approach - you simply define functions, export them, and tsc.run handles routing, deployment, and infrastructure automatically.
+Lumo Framework is a serverless framework that helps developers build, organise, and deploy serverless applications. The framework follows a "convention over configuration" approach - you simply define functions, export them, and Lumo handles routing, deployment, and infrastructure automatically.
 
 The project consists of multiple repositories:
 
-- **Monorepo**: The tsc.run CLI, Core framework and cloud adapters.
-- **tsc.run**: The example app for new tsc.run projects.
-- **Documentation Site**: The tsc.run website and developer guides.
+- **Monorepo**: The Lumo Framework CLI, Core Framework, and cloud adapters.
+- **lumo**: The example app for new Lumo Framework projects.
+- **Documentation Site**: The Lumo Framework website and developer guides.
 
 ## Ways to Contribute
 
@@ -22,7 +22,7 @@ Found a bug in the framework or deployment process? Help us improve:
 2. Use our bug report template.
 3. Include reproduction steps with a minimal example project.
 4. Provide environment details (Node.js version, cloud provider).
-5. Include relevant logs from tsc.run or deployment output.
+5. Include relevant logs from Lumo Framework or deployment output.
 
 ### 💡 Feature Requests
 
@@ -43,7 +43,7 @@ Documentation improvements help the entire serverless community:
 
 ### 🔧 Code Contributions
 
-Ready to contribute to tsc.run? Here's how:
+Ready to contribute to Lumo Framework? Here's how:
 
 ## Getting Started
 
@@ -61,7 +61,7 @@ Ready to contribute to tsc.run? Here's how:
 1. **Clone the repository**:
 
    ```bash
-   git clone https://github.com/tsc-run/monorepo.git
+   git clone https://github.com/lumo-framework/monorepo.git
    cd monorepo
    ```
 
@@ -135,29 +135,6 @@ cd packages/core && pnpm build
 cd packages/adapter-aws && pnpm build
 ```
 
-#### Testing CLI Commands Locally
-
-For testing the CLI with actual projects, you have two options:
-
-```bash
-# Build the CLI first
-pnpm build
-
-# Set environment variable to use local CLI
-export TSC_RUN_CLI_PATH=/absolute/path/to/cli/packages/cli/dist/index.js
-
-# Or use relative path from your test project
-export TSC_RUN_CLI_PATH=../path/to/cli/packages/cli/dist/index.js
-
-# Now test CLI commands
-./packages/cli/dist/index.js build
-./packages/cli/dist/index.js deploy
-```
-
-#### Working with Test Projects
-
-Use the `tests/gcp-sample/` directory or create your own test project to verify CLI functionality works end-to-end.
-
 ### Commit Messages
 
 We follow [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) format for clear project history:
@@ -214,14 +191,14 @@ Releases follow semantic versioning with special consideration for serverless de
 
 ## Questions?
 
-Don't hesitate to ask questions about serverless development with tsc.run:
+Don't hesitate to ask questions about serverless development with Lumo Framework:
 
 - Open a GitHub Discussion for architecture and usage questions
 - Reach out to maintainers in existing issues
-- Check our comprehensive documentation at https://tsc.run.
+- Check our comprehensive documentation at https://lumo-framework.dev.
 - Browse example projects in our repository
 
-Thank you for contributing to tsc.run!
+Thank you for contributing to Lumo Framework!
 
 ---
 

@@ -1,4 +1,4 @@
-import { log, chalk } from '@tsc-run/utils';
+import { log, chalk } from '@lumo-framework/utils';
 
 export class DevLogger {
   constructor(private verbose: boolean = false) {}

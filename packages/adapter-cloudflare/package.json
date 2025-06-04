@@ -1,10 +1,10 @@
 {
-  "name": "@tsc-run/adapter-cloudflare",
-  "version": "0.7.0-next.3",
-  "description": "Cloudflare Workers runtime adapter for tsc-run framework",
+  "name": "@lumo-framework/adapter-cloudflare",
+  "version": "0.1.0-alpha.1",
+  "description": "Cloudflare Workers runtime adapter for Lumo Framework",
   "repository": {
     "type": "git",
-    "url": "https://github.com/tsc-run/cli.git",
+    "url": "https://github.com/lumo-framework/monorepo.git",
     "directory": "packages/adapter-cloudflare"
   },
   "exports": {
@@ -12,7 +12,7 @@
     "./secret-resolver": "./dist/secret-resolver.js",
     "./event-dispatcher": "./dist/event-dispatcher.js"
   },
-  "homepage": "https://tsc.run",
+  "homepage": "https://lumo-framework.dev",
   "keywords": [
     "typescript",
     "serverless",
@@ -35,8 +35,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@tsc-run/core": "workspace:*",
-    "@tsc-run/utils": "workspace:*"
+    "@lumo-framework/core": "workspace:*",
+    "@lumo-framework/utils": "workspace:*"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20241127.0",

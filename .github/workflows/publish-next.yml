@@ -41,50 +41,50 @@ jobs:
         run: |
           # Update workspace:* dependencies to actual versions
           cd packages/core
-          sed -i "s/\"@tsc-run\/utils\": \"workspace:\*\"/\"@tsc-run\/utils\": \"$NEW_VERSION\"/" package.json
+          sed -i "s/\"@lumo-framework\/utils\": \"workspace:\*\"/\"@lumo-framework\/utils\": \"$NEW_VERSION\"/" package.json
 
           cd ../adapter-aws
-          sed -i "s/\"@tsc-run\/core\": \"workspace:\*\"/\"@tsc-run\/core\": \"$NEW_VERSION\"/" package.json
-          sed -i "s/\"@tsc-run\/utils\": \"workspace:\*\"/\"@tsc-run\/utils\": \"$NEW_VERSION\"/" package.json
+          sed -i "s/\"@lumo-framework\/core\": \"workspace:\*\"/\"@lumo-framework\/core\": \"$NEW_VERSION\"/" package.json
+          sed -i "s/\"@lumo-framework\/utils\": \"workspace:\*\"/\"@lumo-framework\/utils\": \"$NEW_VERSION\"/" package.json
 
           cd ../adapter-cloudflare
-          sed -i "s/\"@tsc-run\/core\": \"workspace:\*\"/\"@tsc-run\/core\": \"$NEW_VERSION\"/" package.json
-          sed -i "s/\"@tsc-run\/utils\": \"workspace:\*\"/\"@tsc-run\/utils\": \"$NEW_VERSION\"/" package.json
+          sed -i "s/\"@lumo-framework\/core\": \"workspace:\*\"/\"@lumo-framework\/core\": \"$NEW_VERSION\"/" package.json
+          sed -i "s/\"@lumo-framework\/utils\": \"workspace:\*\"/\"@lumo-framework\/utils\": \"$NEW_VERSION\"/" package.json
 
           cd ../cli
-          sed -i "s/\"@tsc-run\/adapter-aws\": \"workspace:\*\"/\"@tsc-run\/adapter-aws\": \"$NEW_VERSION\"/" package.json
-          sed -i "s/\"@tsc-run\/core\": \"workspace:\*\"/\"@tsc-run\/core\": \"$NEW_VERSION\"/" package.json
-          sed -i "s/\"@tsc-run\/utils\": \"workspace:\*\"/\"@tsc-run\/utils\": \"$NEW_VERSION\"/" package.json
+          sed -i "s/\"@lumo-framework\/adapter-aws\": \"workspace:\*\"/\"@lumo-framework\/adapter-aws\": \"$NEW_VERSION\"/" package.json
+          sed -i "s/\"@lumo-framework\/core\": \"workspace:\*\"/\"@lumo-framework\/core\": \"$NEW_VERSION\"/" package.json
+          sed -i "s/\"@lumo-framework\/utils\": \"workspace:\*\"/\"@lumo-framework\/utils\": \"$NEW_VERSION\"/" package.json
 
-      - name: Publish @tsc-run/utils
+      - name: Publish @lumo-framework/utils
         run: |
           cd packages/utils
           pnpm publish --tag next --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish @tsc-run/core
+      - name: Publish @lumo-framework/core
         run: |
           cd packages/core
           pnpm publish --tag next --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish @tsc-run/adapter-aws
+      - name: Publish @lumo-framework/adapter-aws
         run: |
           cd packages/adapter-aws
           pnpm publish --tag next --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish @tsc-run/adapter-cloudflare
+      - name: Publish @lumo-framework/adapter-cloudflare
         run: |
           cd packages/adapter-cloudflare
           pnpm publish --tag next --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish @tsc-run/cli
+      - name: Publish @lumo-framework/cli
         run: |
           cd packages/cli
           pnpm publish --tag next --access public --no-git-checks

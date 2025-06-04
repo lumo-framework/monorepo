@@ -8,7 +8,7 @@ import { Config } from './schema.js';
  *
  * @example
  * ```ts
- * import { defineConfig } from '@tsc-run/core';
+ * import { defineConfig } from '@lumo-framework/core';
  *
  * export default defineConfig({
  *   projectName: 'my-app',

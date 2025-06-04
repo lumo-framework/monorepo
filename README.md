@@ -1,35 +1,35 @@
 <h1 align="center">
-  <p align="center"><a href="https://tsc.run" target="_blank"><img src="https://tsc.run/tsc-mascot.png" width="200" alt="tsc.run Logo"></a></p>
-  tsc.run - CLI / Adapters / Core
+  <p align="center"><a href="https://lumo-framework.dev" target="_blank"><img src="https://lumo-framework.dev/tamo-mascot.png" width="200" alt="Lumo Framework Logo"></a></p>
+  Lumo Framework - CLI / Adapters / Core
 </h1>
 
 <p align="center">
-  <a href="https://github.com/tsc-run/monorepo/actions/workflows/release.yml">
-    <img alt="CI Status" src="https://github.com/tsc-run/monorepo/actions/workflows/release.yml/badge.svg">
+  <a href="https://github.com/lumo-framework/monorepo/actions/workflows/release.yml">
+    <img alt="CI Status" src="https://github.com/lumo-framework/monorepo/actions/workflows/release.yml/badge.svg">
   </a>
-  <a href="https://www.npmjs.com/package/@tsc-run/core">
-    <img alt="npm version" src="https://img.shields.io/npm/v/@tsc-run/core">
+  <a href="https://www.npmjs.com/package/@lumo-framework/core">
+    <img alt="npm version" src="https://img.shields.io/npm/v/@lumo-framework/core">
   </a>
-  <a href="https://www.npmjs.com/package/@tsc-run/core">
-    <img alt="npm downloads" src="https://img.shields.io/npm/dm/@tsc-run/core">
+  <a href="https://www.npmjs.com/package/@lumo-framework/core">
+    <img alt="npm downloads" src="https://img.shields.io/npm/dm/@lumo-framework/core">
   </a>
-  <img alt="License" src="https://img.shields.io/github/license/tsc-run/monorepo">
-  <img alt="Contributors" src="https://img.shields.io/github/contributors/tsc-run/monorepo?color=blue">
+  <img alt="License" src="https://img.shields.io/github/license/lumo-framework/monorepo">
+  <img alt="Contributors" src="https://img.shields.io/github/contributors/lumo-framework/monorepo?color=blue">
 </p>
 
-> Looking for the tsc.run starter template? Check out the [tsc-run/tsc](https://github.com/tsc-run/tsc-run) repository.
+> Looking for the Lumo Framework starter template? Check out the [lumo-framework/lumo](https://github.com/lumo-framework/lumo) repository.
 
 ### Contributing
 
-Check out our [contributing guide](./CONTRIBUTING.md) for details on how to contribute to the tsc.run project.
+Check out our [contributing guide](./CONTRIBUTING.md) for details on how to contribute to the Lumo Framework project.
 
 ### Projects / Issues
 
-We use a single GitHub project to track all issues across tsc.run, you can find it [here](https://github.com/orgs/tsc-run/projects/1).
+We use a single GitHub project to track all issues across Lumo Framework, you can find it [here](https://github.com/orgs/lumo-framework/projects/1).
 
 ## Documentation
 
-Visit [tsc.run](https://tsc.run)
+Visit [lumo-framework.dev](https://lumo-framework.dev)
 
 ## License
 

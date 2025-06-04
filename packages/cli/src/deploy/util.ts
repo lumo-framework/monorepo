@@ -1,4 +1,4 @@
-import { log } from '@tsc-run/utils';
+import { log } from '@lumo-framework/utils';
 
 interface DeploymentConfig {
   provider?: string;

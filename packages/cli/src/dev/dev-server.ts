@@ -7,8 +7,8 @@ import { createServer, type Server } from 'http';
 import * as chokidar from 'chokidar';
 import path from 'path';
 import { promises as fs } from 'fs';
-import { loadConfig, http } from '@tsc-run/core';
-import type { config } from '@tsc-run/core';
+import { loadConfig, http } from '@lumo-framework/core';
+import type { config } from '@lumo-framework/core';
 import {
   scanRoutes,
   expandRoutesToMethods,

@@ -14,7 +14,7 @@ import {
 import { existsSync, readdirSync } from 'fs';
 import { join } from 'path';
 import { NetworkingStackExports } from './networking-stack.js';
-import type { config } from '@tsc-run/core';
+import type { config } from '@lumo-framework/core';
 import { toPascalCase } from '../utils.js';
 import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
 

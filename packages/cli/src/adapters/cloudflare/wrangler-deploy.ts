@@ -1,5 +1,5 @@
-import type { config } from '@tsc-run/core';
-import type { LogMethods } from '@tsc-run/utils';
+import type { config } from '@lumo-framework/core';
+import type { LogMethods } from '@lumo-framework/utils';
 import {
   log as defaultLog,
   ProgressDisplay,
@@ -8,7 +8,7 @@ import {
   showRouterDeploymentProgress,
   showQueueSetupProgress,
   DEPLOYMENT_ICONS,
-} from '@tsc-run/utils';
+} from '@lumo-framework/utils';
 import { spawn } from 'child_process';
 import fs from 'fs/promises';
 import path from 'path';

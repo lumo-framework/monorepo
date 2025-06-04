@@ -1,4 +1,4 @@
-import type { events } from '@tsc-run/core';
+import type { events } from '@lumo-framework/core';
 import type {
   CloudflareMessageBatch,
   CloudflareMessage,

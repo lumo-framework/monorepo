@@ -1,8 +1,8 @@
 import type { CommandModule } from 'yargs';
-import { loadConfig, config } from '@tsc-run/core';
+import { loadConfig, config } from '@lumo-framework/core';
 import { deploy } from '../deploy/deploy.js';
 import { formatDeploymentOutput } from '../deploy/util.js';
-import { log } from '@tsc-run/utils';
+import { log } from '@lumo-framework/utils';
 import * as readline from 'readline';
 import { spawn } from 'child_process';
 import { setTimeout, clearTimeout } from 'timers';

@@ -1,6 +1,6 @@
 # Security Policy
 
-Thank you for taking the time to help secure **tsc-run**!  
+Thank you for taking the time to help secure **Lumo Framework**!  
 This monorepo contains the **CLI, adapters, and core framework runtime**.  
 Because we’re still in **alpha**, some timelines and guarantees differ from a mature project.
 
@@ -8,13 +8,13 @@ Because we’re still in **alpha**, some timelines and guarantees differ from a 
 
 ## 📌 Scope
 
-| If the vulnerability affects…                   | Report **here** (monorepo) | Instead, report in…                                   |
-| ----------------------------------------------- | :------------------------: | ----------------------------------------------------- |
-| CLI command code (`packages/cli`)               |             ✅             |                                                       |
-| Adapter packages (`packages/adapter-*`)         |             ✅             |                                                       |
-| Core framework & shared utils (`packages/core`) |             ✅             |                                                       |
-| Starter template scaffolding                    |                            | **Starter repo** <https://github.com/tsc-run/tsc-run> |
-| Documentation site / markdown guides            |                            | **Docs repo** <https://github.com/tsc-run/docs>       |
+| If the vulnerability affects…                   | Report **here** (monorepo) | Instead, report in…                                       |
+| ----------------------------------------------- | :------------------------: | --------------------------------------------------------- |
+| CLI command code (`packages/cli`)               |             ✅             |                                                           |
+| Adapter packages (`packages/adapter-*`)         |             ✅             |                                                           |
+| Core framework & shared utils (`packages/core`) |             ✅             |                                                           |
+| Starter template scaffolding                    |                            | **Starter repo** <https://github.com/lumo-framework/lumo> |
+| Documentation site / markdown guides            |                            | **Docs repo** <https://github.com/lumo-framework/website> |
 
 _Not sure?_ → Create a private advisory **here**; we’ll triage.
 
@@ -45,7 +45,7 @@ Patches are released as soon as they merge into `main`.
 
 | Method                       | Link                                        |
 | ---------------------------- | ------------------------------------------- |
-| **Encrypted email**          | `security@tsc-run.dev`                      |
+| **Encrypted email**          | `lumo-framework@icloud.com`                 |
 | **GitHub Security Advisory** | [Create one](../../security/advisories/new) |
 
 Please include:

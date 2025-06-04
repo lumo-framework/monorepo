@@ -1,4 +1,4 @@
-import type { http } from '@tsc-run/core';
+import type { http } from '@lumo-framework/core';
 
 export const buildCloudflareResponse = (
   response: http.Response

@@ -5,8 +5,8 @@ import {
   scanSubscribers,
 } from '../project/route-scanner.js';
 import { bundleRoute } from '../project/bundler.js';
-import { loadConfig, type config } from '@tsc-run/core';
-import { log } from '@tsc-run/utils';
+import { loadConfig, type config } from '@lumo-framework/core';
+import { log } from '@lumo-framework/utils';
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -151,16 +151,16 @@ async function generateRouteWrapper(
 
   if (provider === 'aws') {
     wrapperContent = `
-import '@tsc-run/adapter-aws/secret-resolver';
-import { lambdaAdapter } from '@tsc-run/adapter-aws';
+import '@lumo-framework/adapter-aws/secret-resolver';
+import { lambdaAdapter } from '@lumo-framework/adapter-aws';
 import {${method} as handler} from '${path.resolve(routeFile)}';
 
 export const lambdaHandler = lambdaAdapter(handler);
 `;
   } else if (provider === 'cloudflare') {
     wrapperContent = `
-import { initializeSecretResolver } from '@tsc-run/adapter-cloudflare/secret-resolver';
-import { workerAdapter } from '@tsc-run/adapter-cloudflare';
+import { initializeSecretResolver } from '@lumo-framework/adapter-cloudflare/secret-resolver';
+import { workerAdapter } from '@lumo-framework/adapter-cloudflare';
 import {${method} as handler} from '${path.resolve(routeFile)}';
 
 const adaptedHandler = workerAdapter(handler);
@@ -191,16 +191,16 @@ async function generateSubscriberWrapper(
 
   if (provider === 'aws') {
     wrapperContent = `
-import '@tsc-run/adapter-aws/secret-resolver';
-import { subscriberAdapter } from '@tsc-run/adapter-aws';
+import '@lumo-framework/adapter-aws/secret-resolver';
+import { subscriberAdapter } from '@lumo-framework/adapter-aws';
 import {listen} from '${path.resolve(subscriberFile)}';
 
 export const lambdaHandler = subscriberAdapter(listen);
 `;
   } else if (provider === 'cloudflare') {
     wrapperContent = `
-import { initializeSecretResolver } from '@tsc-run/adapter-cloudflare/secret-resolver';
-import { queueAdapter } from '@tsc-run/adapter-cloudflare';
+import { initializeSecretResolver } from '@lumo-framework/adapter-cloudflare/secret-resolver';
+import { queueAdapter } from '@lumo-framework/adapter-cloudflare';
 import {listen} from '${path.resolve(subscriberFile)}';
 
 const queueHandler = queueAdapter(listen);

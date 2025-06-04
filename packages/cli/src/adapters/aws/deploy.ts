@@ -4,14 +4,14 @@ import { dirname, join } from 'path';
 import { setInterval, clearInterval } from 'timers';
 import { glob } from 'glob';
 import path from 'path';
-import type { config } from '@tsc-run/core';
-import type { LogMethods } from '@tsc-run/utils';
+import type { config } from '@lumo-framework/core';
+import type { LogMethods } from '@lumo-framework/utils';
 import {
   ProgressDisplay,
   showBootstrapProgress,
   showInfrastructureDeploymentProgress,
   DEPLOYMENT_ICONS,
-} from '@tsc-run/utils';
+} from '@lumo-framework/utils';
 import { toPascalCase, generateStackName } from './utils.js';
 
 export interface DomainInfo {

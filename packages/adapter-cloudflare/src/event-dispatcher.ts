@@ -1,4 +1,4 @@
-import type { events } from '@tsc-run/core';
+import type { events } from '@lumo-framework/core';
 import type { CloudflareQueue } from './types.js';
 
 type EventDispatcher = events.EventDispatcher;
@@ -41,7 +41,7 @@ async function invokeSubscribersViaQueue(
 export const initializeCloudflareEventDispatcher = async (
   env: Record<string, unknown>
 ): Promise<void> => {
-  const { events } = await import('@tsc-run/core');
+  const { events } = await import('@lumo-framework/core');
   const dispatcher = createCloudflareEventDispatcher(env);
   events.setEventDispatcher(dispatcher);
 };

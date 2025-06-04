@@ -1,4 +1,4 @@
-import { secrets } from '@tsc-run/core';
+import { secrets } from '@lumo-framework/core';
 import { initializeCloudflareEventDispatcher } from './event-dispatcher.js';
 
 const createCloudflareSecretResolver = (env: Record<string, unknown>) => {

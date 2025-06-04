@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events';
-import type { config } from '@tsc-run/core';
+import type { config } from '@lumo-framework/core';
 import { EnhancedDevLogger } from './enhanced-dev-logger.js';
 import type { DevServerEvent, SubscriberExecution } from './types.js';
 

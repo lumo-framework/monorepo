@@ -8,7 +8,7 @@ import {
 import { DomainName, RestApi } from 'aws-cdk-lib/aws-apigateway';
 import { ApiGatewayDomain } from 'aws-cdk-lib/aws-route53-targets';
 
-import type { config } from '@tsc-run/core';
+import type { config } from '@lumo-framework/core';
 
 interface DomainStackProps extends StackProps {
   config: config.Config;

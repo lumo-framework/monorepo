@@ -1,4 +1,4 @@
-import type { events } from '@tsc-run/core';
+import type { events } from '@lumo-framework/core';
 
 type EventDispatcher = events.EventDispatcher;
 
@@ -39,7 +39,7 @@ export const createAWSEventDispatcher = (): EventDispatcher => {
 };
 
 export const initializeAWSEventDispatcher = async (): Promise<void> => {
-  const { events } = await import('@tsc-run/core');
+  const { events } = await import('@lumo-framework/core');
   const dispatcher = createAWSEventDispatcher();
   events.setEventDispatcher(dispatcher);
 };

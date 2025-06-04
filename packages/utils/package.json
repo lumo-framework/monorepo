@@ -1,13 +1,13 @@
 {
-  "name": "@tsc-run/utils",
-  "version": "0.7.0-next.3",
-  "description": "Shared utilities for tsc-run packages",
+  "name": "@lumo-framework/utils",
+  "version": "0.1.0-alpha.1",
+  "description": "Shared utilities for Lumo Framework packages",
   "repository": {
     "type": "git",
-    "url": "https://github.com/tsc-run/cli.git",
+    "url": "https://github.com/lumo-framework/monorepo.git",
     "directory": "packages/utils"
   },
-  "homepage": "https://tsc.run",
+  "homepage": "https://lumo-framework.dev",
   "keywords": [
     "typescript",
     "serverless",

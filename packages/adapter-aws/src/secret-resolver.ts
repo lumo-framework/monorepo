@@ -1,4 +1,4 @@
-import { secrets } from '@tsc-run/core';
+import { secrets } from '@lumo-framework/core';
 import { GetParameterCommand, SSMClient } from '@aws-sdk/client-ssm';
 
 const ssm = new SSMClient({});

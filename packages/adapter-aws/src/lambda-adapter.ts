@@ -1,5 +1,5 @@
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-import type { http } from '@tsc-run/core';
+import type { http } from '@lumo-framework/core';
 import { buildRequestFromApiGateway } from './aws-request-builder.js';
 import { buildApiGatewayResponse } from './aws-response-builder.js';
 

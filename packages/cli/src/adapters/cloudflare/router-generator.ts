@@ -1,4 +1,4 @@
-import type { config } from '@tsc-run/core';
+import type { config } from '@lumo-framework/core';
 import fs from 'fs/promises';
 
 export interface RouteInfo {

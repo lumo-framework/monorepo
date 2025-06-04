@@ -1,4 +1,4 @@
-import { http } from '@tsc-run/core';
+import { http } from '@lumo-framework/core';
 import type { ExecutionContext } from './types.js';
 import './types.js';
 
