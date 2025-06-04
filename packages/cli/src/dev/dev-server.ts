@@ -159,13 +159,10 @@ export class DevServer {
         return { statusCode };
       }
 
-      // Convert Express request to tsc-run request
       const tscRequest = RequestAdapter.fromExpress(req, params);
 
-      // Call the handler
       const response = await handler(tscRequest);
 
-      // Get status code from tsc-run response
       if (
         response &&
         typeof response === 'object' &&
@@ -175,7 +172,6 @@ export class DevServer {
         statusCode = typedResponse.statusCode || 200;
       }
 
-      // Convert tsc-run response to Express response
       RequestAdapter.toExpress(response as http.Response, res);
       return { statusCode };
     };
@@ -351,7 +347,7 @@ export class DevServer {
 
     try {
       // Use the EXACT same approach as the working build command
-      const tempDir = path.join(process.cwd(), '.tsc-run', 'dev-cache');
+      const tempDir = path.join(process.cwd(), '.lumo', 'dev-cache');
       await fs.mkdir(tempDir, { recursive: true });
 
       // Generate wrapper using the same pattern as build.ts generateLambdaWrapper
@@ -490,7 +486,7 @@ export { handler };
 
   private async cleanupDevCache(): Promise<void> {
     try {
-      const tempDir = path.join(process.cwd(), '.tsc-run', 'dev-cache');
+      const tempDir = path.join(process.cwd(), '.lumo', 'dev-cache');
       await fs.rm(tempDir, { recursive: true, force: true });
       await fs.mkdir(tempDir, { recursive: true });
       this.compiledFiles.clear();
@@ -562,7 +558,7 @@ export { handler };
         filePath.endsWith('.ts')
       ) {
         await this.scanAndRegisterSubscribers();
-      } else if (filePath.includes('tsc-run.config')) {
+      } else if (filePath.includes('lumo.config')) {
         // Reload config
         this.config = await loadConfig();
         await this.setupLocalSecrets();

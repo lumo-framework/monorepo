@@ -8,15 +8,6 @@ assignees: mrbenosborne
 
 # Feature Request
 
-## 🚦 **First: Where should this feature be requested?**
-
-Before filling out this template, please check where your request belongs:
-
-- **🔧 New CLI commands, adapters, or core framework features** → Continue here ✅
-- **📚 Documentation improvements or new guides** → Request in [lumo-framework/docs](https://github.com/lumo-framework/docs/issues/new)
-- **📋 Template improvements** (better examples, additional configs) → Request in [lumo-framework/tsc-run](https://github.com/lumo-framework/lumo-framework/issues/new)
-- **❓ Not sure?** → Continue here and we'll triage it for you
-
 ---
 
 ## 💡 **Feature Description**

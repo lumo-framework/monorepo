@@ -14,7 +14,7 @@ describe('Build Command Route Scanning', () => {
 
   beforeEach(async () => {
     // Create temporary test directory
-    testDir = await fs.mkdtemp('/tmp/tsc-run-test-');
+    testDir = await fs.mkdtemp('/tmp/lumo-test-');
     originalCwd = process.cwd();
     process.chdir(testDir);
 

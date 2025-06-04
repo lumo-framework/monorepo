@@ -131,7 +131,7 @@ export const deployCommand: CommandModule = {
       } catch {
         log.error('No build found!');
         log.warn('You need to build your project before deploying.');
-        log.info('Run: tsc-run build');
+        log.info('Run: lumo build');
         process.exit(1);
       }
 

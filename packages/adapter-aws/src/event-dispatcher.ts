@@ -24,7 +24,7 @@ export const createAWSEventDispatcher = (): EventDispatcher => {
         new PutEventsCommand({
           Entries: [
             {
-              Source: 'tsc-run',
+              Source: 'lumo',
               DetailType: type,
               Detail: JSON.stringify(data),
               EventBusName: process.env.EVENT_BUS_NAME,

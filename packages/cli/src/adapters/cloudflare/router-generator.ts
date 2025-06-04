@@ -122,7 +122,7 @@ export default {
       });
       
       // Add router identification header
-      serviceRequest.headers.set('X-Forwarded-By', 'tsc-run-router');
+      serviceRequest.headers.set('X-Forwarded-By', 'lumo-router');
       serviceRequest.headers.set('X-Original-URL', request.url);
       
       // Add path parameters as headers for the worker to extract

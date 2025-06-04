@@ -205,7 +205,7 @@ export async function deployToCloudflareWithWrangler(
 
     const totalFunctions = routes.length + subscribers.length;
     if (totalFunctions === 0) {
-      throw new Error('No built functions found. Run `tsc-run build` first.');
+      throw new Error('No built functions found. Run `lumo build` first.');
     }
 
     if (routes.length > 0) {

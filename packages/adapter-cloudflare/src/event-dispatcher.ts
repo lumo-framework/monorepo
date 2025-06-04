@@ -11,7 +11,7 @@ export const createCloudflareEventDispatcher = (
       type,
       data,
       timestamp: new Date().toISOString(),
-      source: 'tsc-run',
+      source: 'lumo',
     };
 
     const queueResult = await invokeSubscribersViaQueue(env, event);

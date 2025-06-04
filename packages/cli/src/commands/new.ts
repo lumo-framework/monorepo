@@ -39,7 +39,7 @@ export const newCommand: CommandModule<object, NewCommandArgs> = {
       // Clone the template repository
       console.log('📦 Cloning template repository...');
       execSync(
-        `git clone https://github.com/Lumo/tsc.run.git "${projectName}"`,
+        `git clone https://github.com/lumo-framework/lumo.git "${projectName}"`,
         {
           stdio: 'inherit',
         }

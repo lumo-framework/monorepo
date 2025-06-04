@@ -1,7 +1,7 @@
 import { Config } from './schema.js';
 
 /**
- * Define a tsc-run configuration with full TypeScript support
+ * Define a Lumo configuration with full TypeScript support
  *
  * @param config - The configuration object
  * @returns The same configuration object (for type inference)

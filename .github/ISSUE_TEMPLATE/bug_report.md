@@ -8,15 +8,6 @@ assignees: mrbenosborne
 
 # Bug Report
 
-## 🚦 **First: Where should this bug be reported?**
-
-Before filling out this template, please check where your issue belongs:
-
-- **🔧 CLI, adapters, or core framework issues** → Continue here ✅
-- **📚 Documentation issues** → Report in [lumo-framework/docs](https://github.com/lumo-framework/docs/issues/new)
-- **📋 Template-specific issues** (starter configs, example files) → Report in [lumo-framework/tsc-run](https://github.com/lumo-framework/lumo-framework/issues/new)
-- **❓ Not sure?** → Continue here and we'll triage it for you
-
 ---
 
 ## 📝 **Bug Description**
@@ -41,7 +32,7 @@ Before filling out this template, please check where your issue belongs:
 
 ## 🔍 **Environment**
 
-- **tsc-run version:** <!-- `tsc-run --version` or package.json version -->
+- **lumo version:** <!-- `lumo --version` or package.json version -->
 - **Node.js version:** <!-- `node --version` -->
 - **npm/yarn/pnpm version:** <!-- `npm --version` -->
 - **Operating System:** <!-- Windows/macOS/Linux + version -->
@@ -49,7 +40,7 @@ Before filling out this template, please check where your issue belongs:
 
 ## 🎯 **Affected Component**
 
-Which part of tsc-run is affected?
+Which part of lumo is affected?
 
 - [ ] CLI
 - [ ] Core framework
@@ -69,7 +60,7 @@ Which part of tsc-run is affected?
 
 ### Configuration files
 
-<!-- Share relevant config files (tsconfig.json, tsc-run config, etc.) -->
+<!-- Share relevant config files (tsconfig.json, lumo config, etc.) -->
 
 ### Screenshots
 
@@ -80,5 +71,3 @@ Which part of tsc-run is affected?
 <!-- Link to any related issues -->
 
 ---
-
-**🔍 Debug info:** If you can run `tsc-run --debug` or similar, please include that output.

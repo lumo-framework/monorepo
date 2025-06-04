@@ -80,7 +80,7 @@ export class AppStack extends Stack {
     const functionsDir = join(process.cwd(), 'dist', 'functions');
 
     if (!existsSync(functionsDir)) {
-      throw new Error('No built functions found. Run "tsc-run build" first.');
+      throw new Error('No built functions found. Run "lumo build" first.');
     }
 
     // Get all function files
@@ -173,7 +173,7 @@ export class AppStack extends Stack {
 
       // Create EventBridge rule for this subscriber
       let eventPattern: { source: string[]; 'detail-type'?: string[] } = {
-        source: ['tsc-run'], // Only listen to events from our application
+        source: ['lumo'], // Only listen to events from our application
       };
 
       // If specific event types are configured, add them to the pattern

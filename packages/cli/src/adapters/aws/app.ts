@@ -9,7 +9,6 @@ import { SecretStack } from './cdk/secret-stack.js';
 async function main() {
   const app = new App();
 
-  // Load tsc-run configuration
   let config: config.Config;
   try {
     config = await loadConfig();
@@ -19,7 +18,6 @@ async function main() {
   }
 
   // Generate stack name in format: <ProjectName><Env><Domain>
-
   const env = {
     account: process.env.CDK_DEFAULT_ACCOUNT,
     region: process.env.CDK_DEFAULT_REGION || 'us-east-1',
