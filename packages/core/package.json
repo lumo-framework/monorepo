@@ -1,6 +1,6 @@
 {
   "name": "@lumo-framework/core",
-  "version": "0.1.0-alpha.3",
+  "version": "0.1.0-alpha.4",
   "description": "Core framework types and utilities for Lumo Framework TypeScript serverless framework",
   "repository": {
     "type": "git",

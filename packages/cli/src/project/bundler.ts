@@ -1,9 +1,4 @@
 import { build } from 'esbuild';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 export async function bundleRoute(
   entryFile: string,
@@ -30,6 +25,7 @@ export async function bundleRoute(
     // Cloudflare Workers configuration
     await build({
       ...baseConfig,
+      absWorkingDir: process.cwd(),
       platform: 'browser',
       target: 'es2022',
       define: {
@@ -59,30 +55,13 @@ export async function bundleRoute(
           'data:text/javascript,export default { env: {}, argv: [], cwd: () => "/", platform: "browser" };',
         buffer:
           'data:text/javascript,export default { from: (data) => data }; export const Buffer = { from: (data) => data };',
-
-        // Alias adapter packages to their built versions in development
-        '@lumo-framework/adapter-cloudflare': path.resolve(
-          __dirname,
-          '../../../adapter-cloudflare/dist/index.js'
-        ),
-        '@lumo-framework/adapter-cloudflare/secret-resolver': path.resolve(
-          __dirname,
-          '../../../adapter-cloudflare/dist/secret-resolver.js'
-        ),
-        '@lumo-framework/adapter-cloudflare/queue-adapter': path.resolve(
-          __dirname,
-          '../../../adapter-cloudflare/dist/queue-adapter.js'
-        ),
-        '@lumo-framework/adapter-cloudflare/event-dispatcher': path.resolve(
-          __dirname,
-          '../../../adapter-cloudflare/dist/event-dispatcher.js'
-        ),
       },
     });
   } else {
     // AWS configuration (default)
     await build({
       ...baseConfig,
+      absWorkingDir: process.cwd(),
       platform: 'node',
       target: 'node20',
       external: [
