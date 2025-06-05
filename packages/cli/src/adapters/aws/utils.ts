@@ -19,9 +19,10 @@ export function generateStackName(
   environment: NormalisedName,
   suffix: string = ''
 ): string {
-  return `${normaliseName(projectName)}-${normaliseName(environment)}` + suffix
-    ? `-${normaliseName(suffix)}`
-    : '';
+  return (
+    `${normaliseName(projectName)}-${normaliseName(environment)}` +
+    (suffix ? `-${normaliseName(suffix)}` : '')
+  );
 }
 
 export function generateConstructIdentifier() {}

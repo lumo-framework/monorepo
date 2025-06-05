@@ -17,7 +17,7 @@ import { NetworkingDetails } from './networking-stack.js';
 import { NetworkingConstruct } from './constructs/networking.js';
 import type { config } from '@lumo-framework/core';
 import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
-import { generateResourceIdentifier, NormalisedName } from '../utils';
+import { generateResourceIdentifier, NormalisedName } from '../utils.js';
 
 interface AppStackProps extends StackProps {
   config: config.Config;

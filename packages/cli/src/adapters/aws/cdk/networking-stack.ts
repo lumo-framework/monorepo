@@ -5,7 +5,7 @@ import {
   generateExportName,
   generateResourceIdentifier,
   NormalisedName,
-} from '../utils';
+} from '../utils.js';
 
 export interface NetworkingStackProps extends StackProps {
   projectName: NormalisedName;
