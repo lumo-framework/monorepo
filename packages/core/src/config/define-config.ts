@@ -16,7 +16,6 @@ import { Config } from './schema.js';
  *   provider: 'aws',
  *   region: 'us-east-1',
  *   events: {
- *     eventBus: 'default',
  *     subscribers: {
  *       'send-welcome-email': {
  *         events: ['user.registered']

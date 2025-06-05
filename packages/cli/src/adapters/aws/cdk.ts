@@ -4,5 +4,5 @@ export { AppStack } from './cdk/app-stack.js';
 export {
   NetworkingStack,
   type NetworkingStackProps,
-  type NetworkingStackExports,
+  type NetworkingDetails,
 } from './cdk/networking-stack.js';

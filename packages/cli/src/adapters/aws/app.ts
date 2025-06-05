@@ -3,7 +3,7 @@ import { AppStack } from './cdk/app-stack.js';
 import { NetworkingStack } from './cdk/networking-stack.js';
 import { DomainStack } from './cdk/domain-stack.js';
 import { type config, loadConfig } from '@lumo-framework/core';
-import { generateStackName } from './utils.js';
+import { generateStackName, normaliseName } from './utils.js';
 import { SecretStack } from './cdk/secret-stack.js';
 
 async function main() {
@@ -17,46 +17,56 @@ async function main() {
     process.exit(1);
   }
 
-  // Generate stack name in format: <ProjectName><Env><Domain>
+  // Create a normalised project name and environment name
+  const normalisedProjectName = normaliseName(config.projectName);
+  const normalisedEnvironment = normaliseName(config.environment);
+
+  // Default environment configuration for all stacks
   const env = {
     account: process.env.CDK_DEFAULT_ACCOUNT,
-    region: process.env.CDK_DEFAULT_REGION || 'us-east-1',
+    region: config.region || process.env.CDK_DEFAULT_REGION || 'us-east-1',
   };
 
-  // Create NetworkingStack first
-  const networkingStackName = generateStackName(
-    config.projectName,
-    config.environment,
-    'Networking'
-  );
-  const networkingStack = new NetworkingStack(app, networkingStackName, {
-    env,
-    projectName: config.projectName,
-    environment: config.environment,
-    natGateways: config.networking?.natGateways ?? 0,
-  });
-
-  // Create a SecretStack
-  new SecretStack(
+  /**
+   * Stacks
+   */
+  const networkingStack = new NetworkingStack(
     app,
-    generateStackName(config.projectName, config.environment, 'Secret'),
+    generateStackName(
+      normalisedProjectName,
+      normalisedEnvironment,
+      'Networking'
+    ),
     {
       env,
-      config,
+      projectName: normalisedProjectName,
+      environment: normalisedEnvironment,
+      natGateways: config.networking?.natGateways ?? 0,
     }
   );
 
-  // Create AppStack with networking dependencies
-  const appStackName = generateStackName(
-    config.projectName,
-    config.environment,
-    'App'
+  new SecretStack(
+    app,
+    generateStackName(normalisedProjectName, normalisedEnvironment, 'Secrets'),
+    {
+      env,
+      projectName: normalisedProjectName,
+      environment: normalisedEnvironment,
+      secrets: config.secrets,
+    }
   );
-  const appStack = new AppStack(app, appStackName, {
-    env,
-    config,
-    networkingExports: networkingStack.exports,
-  });
+
+  const appStack = new AppStack(
+    app,
+    generateStackName(normalisedProjectName, normalisedEnvironment, 'App'),
+    {
+      env,
+      config,
+      networkingExports: networkingStack.networkingDetails,
+      projectName: normalisedProjectName,
+      environment: normalisedEnvironment,
+    }
+  );
 
   // Ensure proper deployment order
   appStack.addDependency(networkingStack);

@@ -4,7 +4,7 @@ import { log } from '@lumo-framework/utils';
 
 export const devCommand: CommandModule = {
   command: 'dev',
-  describe: 'Start local development server with hot reloading',
+  describe: 'Start local development server with hot reloading [DEV]',
   builder: (yargs) => {
     return yargs
       .option('port', {
