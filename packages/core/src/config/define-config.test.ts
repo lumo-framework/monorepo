@@ -54,7 +54,6 @@ describe('defineConfig', () => {
         },
       },
       events: {
-        eventBus: 'custom-bus',
         subscribers: {
           'user-handler': {
             events: ['user.created', 'user.updated'],
@@ -77,12 +76,10 @@ describe('defineConfig', () => {
     assert.strictEqual(result.networking?.natGateways, 2);
     assert.deepStrictEqual(result.build?.exclude, ['*.test.ts']);
     assert.strictEqual(result.secrets?.['api-key']?.value, 'secret-value');
-    assert.strictEqual(result.events?.eventBus, 'custom-bus');
   });
 
   test('should preserve object references', () => {
     const events = {
-      eventBus: 'test-bus',
       subscribers: {
         'test-handler': {
           events: ['test.event'],

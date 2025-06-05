@@ -1,209 +1,120 @@
 import { Stack, StackProps } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
-import { Code, Function, FunctionProps, Runtime } from 'aws-cdk-lib/aws-lambda';
+import {
+  Code,
+  Function,
+  FunctionProps,
+  IFunction,
+  Runtime,
+} from 'aws-cdk-lib/aws-lambda';
 import { LambdaIntegration, RestApi } from 'aws-cdk-lib/aws-apigateway';
 import { EventBus, IEventBus, Rule } from 'aws-cdk-lib/aws-events';
 import { LambdaFunction } from 'aws-cdk-lib/aws-events-targets';
-import {
-  ISecurityGroup,
-  IVpc,
-  SecurityGroup,
-  SubnetType,
-  Vpc,
-} from 'aws-cdk-lib/aws-ec2';
+import { SubnetType } from 'aws-cdk-lib/aws-ec2';
 import { existsSync, readdirSync } from 'fs';
 import { join } from 'path';
-import { NetworkingStackExports } from './networking-stack.js';
+import { NetworkingDetails } from './networking-stack.js';
+import { NetworkingConstruct } from './constructs/networking.js';
 import type { config } from '@lumo-framework/core';
-import { toPascalCase } from '../utils.js';
 import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
+import { generateResourceIdentifier, NormalisedName } from '../utils';
 
 interface AppStackProps extends StackProps {
   config: config.Config;
-  networkingExports: NetworkingStackExports;
+  networkingExports: NetworkingDetails;
+  projectName: NormalisedName;
+  environment: NormalisedName;
 }
 
+type RestApiLambdaFile = {
+  route: string;
+  method: string;
+  path: string;
+};
+
+type SubscriberFile = {
+  name: string;
+  path: string;
+};
+
 export class AppStack extends Stack {
-  public readonly eventBus: IEventBus;
+  // public readonly eventBus: IEventBus;
   public readonly api: RestApi;
-  private readonly vpc?: IVpc;
-  private readonly lambdaSecurityGroup?: ISecurityGroup;
-  private readonly hasNetworking: boolean;
+  private readonly networking: NetworkingConstruct;
 
   constructor(scope: Construct, id: string, props: AppStackProps) {
     super(scope, id, props);
 
-    const ssmParameterPrefix = `arn:aws:ssm:${this.region}:${this.account}:parameter/${props.config.projectName}/${props.config.environment}/*`;
+    const { projectName, environment } = props;
 
-    // Check if networking is enabled (NAT gateways > 0)
-    this.hasNetworking = (props.config.networking?.natGateways ?? 0) > 0;
+    // Initialize networking construct
+    this.networking = new NetworkingConstruct(this, 'Networking', {
+      config: props.config,
+      networkingExports: props.networkingExports,
+    });
 
-    // Import VPC resources only if networking is enabled
-    if (this.hasNetworking) {
-      const vpcAttrs: {
-        vpcId: string;
-        availabilityZones: string[];
-        publicSubnetIds: string[];
-        privateSubnetIds?: string[];
-      } = {
-        vpcId: props.networkingExports.vpcId,
-        availabilityZones: props.networkingExports.availabilityZones,
-        publicSubnetIds: props.networkingExports.publicSubnetIds,
-      };
+    // Rest API
+    this.api = new RestApi(this, generateResourceIdentifier('ApiGateway'));
 
-      // Only include private subnets if they exist (when natGateways > 0)
-      if (props.networkingExports.privateSubnetIds.length > 0) {
-        vpcAttrs.privateSubnetIds = props.networkingExports.privateSubnetIds;
-      }
+    // Create an EventBus
+    const eventBus = this.createEventBus();
+    const eventSource = `${projectName}/${environment}`.toLowerCase();
 
-      this.vpc = Vpc.fromVpcAttributes(this, 'ImportedVpc', vpcAttrs);
-
-      this.lambdaSecurityGroup = SecurityGroup.fromSecurityGroupId(
-        this,
-        'ImportedLambdaSecurityGroup',
-        props.networkingExports.lambdaSecurityGroupId
-      );
-    }
-
-    // Generate RestApi ID in format: <ProjectName><Env>RestAPI
-    const projectName = props.config.projectName || 'Unknown';
-    const environment = props.config.environment || 'dev';
-    const apiId = `${toPascalCase(projectName)}${toPascalCase(environment)}RestAPI`;
-    this.api = new RestApi(this, apiId);
-
-    // Use the configured EventBridge event bus or default
-    const configuredEventBusName = props.config.events?.eventBus || 'default';
-    const eventBusName = this.sanitizeEventBusName(configuredEventBusName);
-    this.eventBus = EventBus.fromEventBusName(this, 'EventBus', eventBusName);
+    const ssmParameterPrefix = `arn:aws:ssm:${this.region}:${this.account}:parameter/${props.config.projectName.toLowerCase()}/${props.config.environment.toLowerCase()}/*`;
 
     // Discover built functions
     const functionsDir = join(process.cwd(), 'dist', 'functions');
-
     if (!existsSync(functionsDir)) {
       throw new Error('No built functions found. Run "lumo build" first.');
     }
 
-    // Get all function files
+    // Create REST API Lambda functions
     const lambdaFiles = this.discoverLambdaFiles(functionsDir);
-    const subscriberFiles = this.discoverSubscriberFiles(functionsDir);
-
-    if (lambdaFiles.length === 0 && subscriberFiles.length === 0) {
-      throw new Error('No functions found in dist/functions directory.');
-    }
-
-    // Create Lambda functions and API routes
-    for (const { route, method, filePath } of lambdaFiles) {
-      let lambdaConfig: FunctionProps = {
-        runtime: Runtime.NODEJS_22_X,
-        handler: 'index.lambdaHandler',
-        code: Code.fromAsset(filePath),
-        environment: {
-          EVENT_BUS_NAME: this.eventBus.eventBusName,
-          TSC_RUN_PROJECT_NAME: props.config.projectName,
-          TSC_RUN_ENVIRONMENT: props.config.environment,
-        },
-      };
-
-      // Only attach VPC configuration if networking is enabled
-      if (this.hasNetworking && this.vpc && this.lambdaSecurityGroup) {
-        lambdaConfig = {
-          ...lambdaConfig,
-          vpc: this.vpc,
-          vpcSubnets: {
-            subnetType: SubnetType.PRIVATE_WITH_EGRESS,
-          },
-          securityGroups: [this.lambdaSecurityGroup],
-        };
-      }
-
-      const lambdaFunction = new Function(
-        this,
-        this.createLambdaId(route, method),
-        lambdaConfig
-      );
-
-      // Grant permission to put events to EventBridge
-      this.eventBus.grantPutEventsTo(lambdaFunction);
-
-      // Add route to API Gateway
-      this.addRoute(this.api, route, method, lambdaFunction);
-
-      // Grant permission to read SSM parameters if configured
-      lambdaFunction.addToRolePolicy(
-        new PolicyStatement({
-          actions: ['ssm:GetParameter'],
-          resources: [ssmParameterPrefix],
-        })
-      );
+    const restApiFunctions = this.createRestApiLambdaFunctions(
+      projectName,
+      environment,
+      eventBus.eventBusName,
+      lambdaFiles
+    );
+    for (const lambdaFunction of restApiFunctions) {
+      this.grantLambdaPermissions(eventBus, ssmParameterPrefix, lambdaFunction);
     }
 
     // Create subscriber Lambda functions
-    for (const { name, filePath } of subscriberFiles) {
-      let subscriberConfig: FunctionProps = {
-        runtime: Runtime.NODEJS_22_X,
-        handler: 'index.lambdaHandler',
-        code: Code.fromAsset(filePath),
-        environment: {
-          TSC_RUN_PROJECT_NAME: props.config.projectName,
-          TSC_RUN_ENVIRONMENT: props.config.environment,
-        },
-      };
+    const subscriberFiles = this.discoverSubscriberFiles(functionsDir);
+    const subscriberFunctions = this.createSubscriberLambdaFunctions(
+      projectName,
+      environment,
+      eventBus.eventBusName,
+      subscriberFiles
+    );
+    for (const subscriber of subscriberFunctions) {
+      this.grantLambdaPermissions(eventBus, ssmParameterPrefix, subscriber.fn);
 
-      // Only attach VPC configuration if networking is enabled
-      if (this.hasNetworking && this.vpc && this.lambdaSecurityGroup) {
-        subscriberConfig = {
-          ...subscriberConfig,
-          vpc: this.vpc,
-          vpcSubnets: {
-            subnetType: SubnetType.PRIVATE_WITH_EGRESS,
-          },
-          securityGroups: [this.lambdaSecurityGroup],
-        };
+      const subscriberEventConfig =
+        props.config.events?.subscribers?.[subscriber.name];
+      if (
+        !subscriberEventConfig ||
+        !subscriberEventConfig.events ||
+        subscriberEventConfig.events.length === 0
+      ) {
+        continue;
       }
-
-      const subscriberFunction = new Function(
-        this,
-        this.sanitizeSubscriberName(name),
-        subscriberConfig
-      );
-
-      // Get event subscriptions for this subscriber from config
-      const subscriberEventConfig = props.config.events?.subscribers?.[name];
-      const eventTypes = subscriberEventConfig?.events || [];
-
-      // Create EventBridge rule for this subscriber
-      let eventPattern: { source: string[]; 'detail-type'?: string[] } = {
-        source: ['lumo'], // Only listen to events from our application
-      };
-
-      // If specific event types are configured, add them to the pattern
-      if (eventTypes.length > 0) {
-        eventPattern['detail-type'] = eventTypes;
-      }
-
-      const rule = new Rule(this, `${this.sanitizeSubscriberName(name)}Rule`, {
-        eventBus: this.eventBus,
-        eventPattern,
-      });
-
-      // Add the subscriber function as a target
-      rule.addTarget(new LambdaFunction(subscriberFunction));
-
-      // Grant permission to read SSM parameters if configured
-      subscriberFunction.addToRolePolicy(
-        new PolicyStatement({
-          actions: ['ssm:GetParameter'],
-          resources: [ssmParameterPrefix],
-        })
+      this.linkSubscribersToEvents(
+        subscriberEventConfig.events,
+        [eventSource],
+        eventBus,
+        subscriber
       );
     }
   }
 
-  private discoverLambdaFiles(
-    lambdasDir: string
-  ): Array<{ route: string; method: string; filePath: string }> {
-    const files: Array<{ route: string; method: string; filePath: string }> =
-      [];
+  private createEventBus(): IEventBus {
+    return new EventBus(this, generateResourceIdentifier('EventBus'));
+  }
+
+  private discoverLambdaFiles(lambdasDir: string): Array<RestApiLambdaFile> {
+    const files: Array<{ route: string; method: string; path: string }> = [];
 
     const scanDirectory = (dir: string, basePath: string = '') => {
       const items = readdirSync(dir, { withFileTypes: true });
@@ -228,7 +139,7 @@ export class AppStack extends Stack {
             );
             const fullRoute = '/' + normalizedRoutePath.replace(/\\/g, '/');
             const { route, method } = this.extractRouteAndMethod(fullRoute);
-            files.push({ route, method, filePath: fullPath });
+            files.push({ route, method, path: fullPath });
           }
 
           // Continue scanning subdirectories
@@ -239,6 +150,167 @@ export class AppStack extends Stack {
 
     scanDirectory(lambdasDir);
     return files;
+  }
+
+  private discoverSubscriberFiles(lambdasDir: string): Array<SubscriberFile> {
+    const files: Array<SubscriberFile> = [];
+    const subscribersDir = join(lambdasDir, 'subscribers');
+
+    if (!existsSync(subscribersDir)) {
+      return files;
+    }
+
+    const scanDirectory = (dir: string, basePath: string = '') => {
+      const items = readdirSync(dir, { withFileTypes: true });
+
+      for (const item of items) {
+        const fullPath = join(dir, item.name);
+        const routePath = join(basePath, item.name);
+
+        if (item.isDirectory()) {
+          const indexFile = join(fullPath, 'index.mjs');
+          if (existsSync(indexFile)) {
+            const name = routePath.replace(/\\/g, '/');
+            files.push({ name, path: fullPath });
+          } else {
+            // Continue scanning subdirectories
+            scanDirectory(fullPath, routePath);
+          }
+        }
+      }
+    };
+
+    scanDirectory(subscribersDir);
+    return files;
+  }
+
+  private createRestApiLambdaFunctions(
+    projectName: string,
+    environment: string,
+    eventBusName: string,
+    files: RestApiLambdaFile[]
+  ) {
+    const functions: IFunction[] = [];
+
+    for (const { route, method, path } of files) {
+      let lambdaConfig: FunctionProps = {
+        runtime: Runtime.NODEJS_22_X,
+        handler: 'index.lambdaHandler',
+        code: Code.fromAsset(path),
+        environment: {
+          EVENT_BUS_NAME: eventBusName,
+          LUMO_PROJECT_NAME: projectName.toLowerCase(), // TODO: NEED TO CHANGE FROM TSC_RUN TO LUMO_
+          LUMO_ENVIRONMENT: environment.toLowerCase(),
+        },
+      };
+
+      // Only attach VPC configuration if NAT Gateways are enabled.
+      if (this.networking.hasNatGateways) {
+        lambdaConfig = {
+          ...lambdaConfig,
+          vpc: this.networking.vpc,
+          vpcSubnets: {
+            subnetType: SubnetType.PRIVATE_WITH_EGRESS,
+          },
+        };
+      }
+
+      const lambdaFunction = new Function(
+        this,
+        this.createLambdaId(route, method),
+        lambdaConfig
+      );
+
+      // Add route to API Gateway
+      this.addRoute(this.api, route, method, lambdaFunction);
+
+      functions.push(lambdaFunction);
+    }
+
+    return functions;
+  }
+
+  private createSubscriberLambdaFunctions(
+    projectName: string,
+    environment: string,
+    eventBusName: string,
+    files: SubscriberFile[]
+  ) {
+    const functions: { name: string; fn: IFunction }[] = [];
+
+    for (const { name, path } of files) {
+      let subscriberConfig: FunctionProps = {
+        runtime: Runtime.NODEJS_22_X,
+        handler: 'index.lambdaHandler',
+        code: Code.fromAsset(path),
+        environment: {
+          EVENT_BUS_NAME: eventBusName,
+          LUMO_PROJECT_NAME: projectName.toLowerCase(), // TODO: NEED TO CHANGE FROM TSC_RUN TO LUMO_
+          LUMO_ENVIRONMENT: environment.toLowerCase(),
+        },
+      };
+
+      // Only attach VPC configuration if NAT Gateways are enabled.
+      if (this.networking.hasNatGateways) {
+        subscriberConfig = {
+          ...subscriberConfig,
+          vpc: this.networking.vpc,
+          vpcSubnets: {
+            subnetType: SubnetType.PRIVATE_WITH_EGRESS,
+          },
+        };
+      }
+
+      const subscriberFunction = new Function(
+        this,
+        this.sanitizeSubscriberName(name),
+        subscriberConfig
+      );
+
+      functions.push({ name, fn: subscriberFunction });
+    }
+
+    return functions;
+  }
+
+  private grantLambdaPermissions(
+    eventBus: IEventBus,
+    ssmParameterPrefix: string,
+    lambdaFunction: IFunction
+  ): void {
+    // Grant permission to put events to EventBridge
+    eventBus.grantPutEventsTo(lambdaFunction);
+
+    // Grant permission to read SSM parameters if configured
+    lambdaFunction.addToRolePolicy(
+      new PolicyStatement({
+        actions: ['ssm:GetParameter'],
+        resources: [ssmParameterPrefix],
+      })
+    );
+  }
+
+  private linkSubscribersToEvents(
+    eventTypes: string[],
+    source: string[],
+    eventBus: IEventBus,
+    subscriber: { name: string; fn: IFunction }
+  ) {
+    let eventPattern: { source: string[]; 'detail-type'?: string[] } = {
+      source,
+      'detail-type': eventTypes,
+    };
+
+    const rule = new Rule(
+      this,
+      `${this.sanitizeSubscriberName(subscriber.name)}Rule`,
+      {
+        eventBus: eventBus,
+        eventPattern,
+      }
+    );
+
+    rule.addTarget(new LambdaFunction(subscriber.fn));
   }
 
   private addRoute(
@@ -349,39 +421,5 @@ export class AppStack extends Stack {
         .replace(/-+/g, '-') // Collapse multiple hyphens
         .substring(0, 256) || 'default'
     ); // Ensure not empty and within length limit
-  }
-
-  private discoverSubscriberFiles(
-    lambdasDir: string
-  ): Array<{ name: string; filePath: string }> {
-    const files: Array<{ name: string; filePath: string }> = [];
-    const subscribersDir = join(lambdasDir, 'subscribers');
-
-    if (!existsSync(subscribersDir)) {
-      return files;
-    }
-
-    const scanDirectory = (dir: string, basePath: string = '') => {
-      const items = readdirSync(dir, { withFileTypes: true });
-
-      for (const item of items) {
-        const fullPath = join(dir, item.name);
-        const routePath = join(basePath, item.name);
-
-        if (item.isDirectory()) {
-          const indexFile = join(fullPath, 'index.mjs');
-          if (existsSync(indexFile)) {
-            const name = routePath.replace(/\\/g, '/');
-            files.push({ name, filePath: fullPath });
-          } else {
-            // Continue scanning subdirectories
-            scanDirectory(fullPath, routePath);
-          }
-        }
-      }
-    };
-
-    scanDirectory(subscribersDir);
-    return files;
   }
 }

@@ -16,7 +16,7 @@ const createAWSSecretResolver = () => {
 
     // Fetch the secret from AWS SSM Parameter Store
     const command = new GetParameterCommand({
-      Name: `/${process.env.TSC_RUN_PROJECT_NAME}/${process.env.TSC_RUN_ENVIRONMENT}/${name}`,
+      Name: `/${process.env.LUMO_PROJECT_NAME}/${process.env.LUMO_ENVIRONMENT}/${name}`,
       WithDecryption: true,
     });
 

@@ -1,18 +1,19 @@
 import { spawn } from 'child_process';
 import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
-import { setInterval, clearInterval } from 'timers';
+import path, { dirname, join } from 'path';
+import { clearInterval, setInterval } from 'timers';
 import { glob } from 'glob';
-import path from 'path';
 import type { config } from '@lumo-framework/core';
 import type { LogMethods } from '@lumo-framework/utils';
 import {
+  DEPLOYMENT_ICONS,
   ProgressDisplay,
   showBootstrapProgress,
   showInfrastructureDeploymentProgress,
-  DEPLOYMENT_ICONS,
 } from '@lumo-framework/utils';
-import { toPascalCase, generateStackName } from './utils.js';
+import { generateStackName } from './utils.js';
+import { mkdirSync } from 'node:fs';
+import fs from 'fs/promises';
 
 export interface DomainInfo {
   name: string;
@@ -36,9 +37,10 @@ function extractApiGatewayUrl(
   projectName: string,
   environment: string
 ): string | null {
+  console.log('RESULT', result);
   // Pattern 1: Standard stack output format
   const appStackName = generateStackName(projectName, environment, 'App');
-  const apiOutputPattern = `${toPascalCase(projectName)}${toPascalCase(environment)}RestAPIEndpoint[A-Z0-9]+`;
+  const apiOutputPattern = `${projectName}-${environment}Endpoint[A-Z0-9]+`; // TODO: Adjust pattern based on actual output
   let apiGatewayOutputs = result.match(
     new RegExp(`${appStackName}\\.${apiOutputPattern} = (https://[^\\s]+)`)
   );
@@ -200,13 +202,34 @@ export async function deployToAws(config: config.Config, _logger?: LogMethods) {
       'Deploying infrastructure stacks...'
     );
 
+    const appStackName =
+      `${config.projectName}-${config.environment}-app`.toLowerCase();
+    const apiGatewayUrlExportId =
+      `${config.projectName}${config.environment}gatewayendpoint`.toLowerCase();
+
+    mkdirSync('.lumo/deployment', { recursive: true });
     const result = await runCdkCommand(
-      ['deploy', '--require-approval', 'never', '--all'],
+      // TODO: Make the lumo dir if not exists
+      [
+        'deploy',
+        '--require-approval',
+        'never',
+        '--all',
+        '--outputs-file=./lumo/deployment/output.json',
+      ],
       false,
       progress,
       routes.length,
       subscribers.length
     );
+
+    // Read the output file to extract URLs
+    const outputRaw = await fs.readFile(
+      './lumo/deployment/output.json',
+      'utf-8'
+    );
+    const output = JSON.parse(outputRaw);
+    console.log('OUTPUT', output[appStackName][apiGatewayUrlExportId]);
 
     const projectName = config.projectName;
     const environment = config.environment;

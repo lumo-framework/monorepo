@@ -1,31 +1,44 @@
+// TODO: What happens when a Secret is deleted?
 import { aws_ssm, Stack, StackProps } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
-import type { config } from '@lumo-framework/core';
-import { toPascalCase } from '../utils.js';
+import { NormalisedName } from '../utils';
 
 interface SecretStackProps extends StackProps {
-  config: config.Config;
+  readonly secrets?: Record<
+    string,
+    { value: SecretValue; description?: string }
+  >;
+  readonly projectName: NormalisedName;
+  readonly environment: NormalisedName;
 }
 
 type SecretValue = string | ((...args: unknown[]) => string);
 
 export class SecretStack extends Stack {
   public secrets: Record<string, aws_ssm.IStringParameter> = {};
-  private readonly config: config.Config;
 
   constructor(scope: Construct, id: string, props: SecretStackProps) {
     super(scope, id, props);
 
-    this.config = props.config;
-    const secrets = this.config.secrets || {};
+    const { secrets, projectName, environment } = props;
 
     for (const secretName in secrets) {
       const secret = secrets[secretName];
-      this.resolveSecretValue(secretName, secret.value);
+      this.resolveSecretValue(
+        projectName,
+        environment,
+        secretName,
+        secret.value
+      );
     }
   }
 
-  private resolveSecretValue(name: string, value: SecretValue): void {
+  private resolveSecretValue(
+    projectName: NormalisedName,
+    environment: NormalisedName,
+    name: string,
+    value: SecretValue
+  ): void {
     let resolvedValue: string = typeof value === 'string' ? value : '';
 
     if (typeof value === 'function') {
@@ -37,12 +50,10 @@ export class SecretStack extends Stack {
       );
     }
 
-    const projectName = this.config.projectName;
-    const environment = this.config.environment;
     const parameterName =
-      `/${projectName}/${environment}/${toPascalCase(name)}`.toLowerCase();
+      `/${projectName}/${environment}/${name}`.toLowerCase();
 
-    this.secrets[name] = new aws_ssm.StringParameter(this, `${name}Parameter`, {
+    this.secrets[name] = new aws_ssm.StringParameter(this, name.toLowerCase(), {
       parameterName,
       stringValue: resolvedValue,
     });

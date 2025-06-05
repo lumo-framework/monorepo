@@ -29,7 +29,6 @@ export const configSchema = z.object({
     .optional(),
   events: z
     .object({
-      eventBus: z.string().default('default'),
       subscribers: z
         .record(
           z.object({

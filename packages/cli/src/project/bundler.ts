@@ -15,6 +15,7 @@ export async function bundleRoute(
     bundle: true,
     outfile: esmOutFile,
     format: 'esm' as const,
+    target: 'es2022',
     minify: true,
     treeShaking: true,
     metafile: false,
@@ -27,7 +28,6 @@ export async function bundleRoute(
       ...baseConfig,
       absWorkingDir: process.cwd(),
       platform: 'browser',
-      target: 'es2022',
       define: {
         'process.env.NODE_ENV': '"production"',
         global: 'globalThis',
@@ -63,7 +63,6 @@ export async function bundleRoute(
       ...baseConfig,
       absWorkingDir: process.cwd(),
       platform: 'node',
-      target: 'node20',
       external: [
         // Node.js built-ins
         'node:*',

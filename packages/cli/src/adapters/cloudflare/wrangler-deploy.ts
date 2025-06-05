@@ -615,8 +615,8 @@ function generateWranglerConfig(
   toml.push('[vars]');
 
   // Add project metadata
-  toml.push(`TSC_RUN_PROJECT_NAME = "${config.projectName}"`);
-  toml.push(`TSC_RUN_ENVIRONMENT = "${config.environment}"`);
+  toml.push(`LUMO_PROJECT_NAME = "${config.projectName}"`);
+  toml.push(`LUMO_ENVIRONMENT = "${config.environment}"`);
 
   // Add service bindings for router worker
   if (
