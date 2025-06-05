@@ -12,8 +12,6 @@ import {
   showInfrastructureDeploymentProgress,
 } from '@lumo-framework/utils';
 import { generateStackName } from './utils.js';
-import { mkdirSync } from 'node:fs';
-import fs from 'fs/promises';
 
 export interface DomainInfo {
   name: string;
@@ -202,34 +200,13 @@ export async function deployToAws(config: config.Config, _logger?: LogMethods) {
       'Deploying infrastructure stacks...'
     );
 
-    const appStackName =
-      `${config.projectName}-${config.environment}-app`.toLowerCase();
-    const apiGatewayUrlExportId =
-      `${config.projectName}${config.environment}gatewayendpoint`.toLowerCase();
-
-    mkdirSync('.lumo/deployment', { recursive: true });
     const result = await runCdkCommand(
-      // TODO: Make the lumo dir if not exists
-      [
-        'deploy',
-        '--require-approval',
-        'never',
-        '--all',
-        '--outputs-file=./lumo/deployment/output.json',
-      ],
+      ['deploy', '--require-approval', 'never', '--all'],
       false,
       progress,
       routes.length,
       subscribers.length
     );
-
-    // Read the output file to extract URLs
-    const outputRaw = await fs.readFile(
-      './lumo/deployment/output.json',
-      'utf-8'
-    );
-    const output = JSON.parse(outputRaw);
-    console.log('OUTPUT', output[appStackName][apiGatewayUrlExportId]);
 
     const projectName = config.projectName;
     const environment = config.environment;
