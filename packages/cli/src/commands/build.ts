@@ -151,10 +151,11 @@ async function generateRouteWrapper(
 
   if (provider === 'aws') {
     wrapperContent = `
-import '@lumo-framework/adapter-aws/secret-resolver';
+import { initializeSecretResolver } from '@lumo-framework/adapter-aws/secret-resolver';
 import { lambdaAdapter } from '@lumo-framework/adapter-aws';
 import {${method} as handler} from '${path.resolve(routeFile)}';
 
+initializeSecretResolver();
 export const lambdaHandler = lambdaAdapter(handler);
 `;
   } else if (provider === 'cloudflare') {
@@ -191,10 +192,11 @@ async function generateSubscriberWrapper(
 
   if (provider === 'aws') {
     wrapperContent = `
-import '@lumo-framework/adapter-aws/secret-resolver';
+import { initializeSecretResolver } from '@lumo-framework/adapter-aws/secret-resolver';
 import { subscriberAdapter } from '@lumo-framework/adapter-aws';
 import {listen} from '${path.resolve(subscriberFile)}';
 
+initializeSecretResolver();
 export const lambdaHandler = subscriberAdapter(listen);
 `;
   } else if (provider === 'cloudflare') {
