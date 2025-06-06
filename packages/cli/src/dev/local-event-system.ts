@@ -1,5 +1,6 @@
 import { EventEmitter } from 'events';
 import type { config } from '@lumo-framework/core';
+import { events } from '@lumo-framework/core';
 import { EnhancedDevLogger } from './enhanced-dev-logger.js';
 import type { DevServerEvent, SubscriberExecution } from './types.js';
 
@@ -59,7 +60,9 @@ export class LocalEventSystem extends EventEmitter {
       timestamp: Date.now(),
     };
 
+    console.log('Subscribers', this.subscribers);
     const subscribers = this.subscribers.get(type) || [];
+    console.log('Subscribers for event type:', type, subscribers.length);
 
     if (subscribers.length > 0) {
       // Log the event emission itself (without subscriber execution time)
@@ -170,50 +173,19 @@ export class LocalEventSystem extends EventEmitter {
 // Create a local adapter that works with the existing emit function
 export class LocalEventAdapter {
   static setup(eventSystem: LocalEventSystem): void {
-    // Instead of overriding the emit function, we'll use a different approach:
-    // 1. Set up console.log interception to catch emit calls
-    // 2. Use environment variables to prevent EventBridge calls
-
-    // Store the original console.log
-    const originalConsoleLog = console.log;
-
-    // Set up console.log interception to catch event dispatches
-    console.log = (...args: unknown[]) => {
-      // Check if this is an event dispatch call
-      if (
-        args.length >= 3 &&
-        args[0] === 'Event dispatched' &&
-        typeof args[1] === 'string'
-      ) {
-        const eventType = args[1];
-        const eventData = args[2];
-
-        // Emit to our local event system instead of just logging
-        eventSystem.emitLocalEvent(eventType, eventData).catch((error) => {
-          originalConsoleLog('Error in local event system:', error);
-        });
-
-        return; // Don't call original console.log for event dispatches
+    // Set up the event dispatcher to route events to our local event system
+    events.setEventDispatcher(async (type: string, data: unknown) => {
+      console.log('LocalEventAdapter dispatching event:', type, data);
+      try {
+        await eventSystem.emitLocalEvent(type, data);
+      } catch (error) {
+        console.log('ERROR LocalEventAdapter dispatching event:', type, error);
       }
-
-      // For all other console.log calls, use the original
-      originalConsoleLog.apply(console, args);
-    };
-
-    // Store original for restoration
-    (console as unknown as Record<string, unknown>).__originalLog =
-      originalConsoleLog;
-
-    // Ensure we're not in "EventBridge mode" by not setting EVENT_BUS_NAME
-    // The core emit function will use the fallback path (console.log)
+    });
   }
 
   static restore(): void {
-    // Restore original console.log
-    const consoleWithOriginal = console as unknown as Record<string, unknown>;
-    if (consoleWithOriginal.__originalLog) {
-      console.log = consoleWithOriginal.__originalLog as typeof console.log;
-      delete consoleWithOriginal.__originalLog;
-    }
+    // Reset to default no-op dispatcher
+    events.setEventDispatcher(async () => {});
   }
 }

@@ -1,4 +1,4 @@
-import { Stack, StackProps } from 'aws-cdk-lib';
+import { Stack, StackProps, CustomResource, Duration } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import {
   Code,
@@ -11,13 +11,18 @@ import { LambdaIntegration, RestApi } from 'aws-cdk-lib/aws-apigateway';
 import { EventBus, IEventBus, Rule } from 'aws-cdk-lib/aws-events';
 import { LambdaFunction } from 'aws-cdk-lib/aws-events-targets';
 import { SubnetType } from 'aws-cdk-lib/aws-ec2';
+import { Provider } from 'aws-cdk-lib/custom-resources';
 import { existsSync, readdirSync } from 'fs';
 import { join } from 'path';
 import { NetworkingDetails } from './networking-stack.js';
 import { NetworkingConstruct } from './constructs/networking.js';
 import type { config } from '@lumo-framework/core';
 import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
-import { generateResourceIdentifier, NormalisedName } from '../utils.js';
+import {
+  generateResourceIdentifier,
+  NormalisedName,
+  toPascalCase,
+} from '../utils.js';
 
 interface AppStackProps extends StackProps {
   config: config.Config;
@@ -33,6 +38,11 @@ type RestApiLambdaFile = {
 };
 
 type SubscriberFile = {
+  name: string;
+  path: string;
+};
+
+type TaskFile = {
   name: string;
   path: string;
 };
@@ -107,6 +117,19 @@ export class AppStack extends Stack {
         subscriber
       );
     }
+
+    // Create task Lambda functions and Custom Resources
+    const taskFiles = this.discoverTaskFiles(functionsDir);
+    const taskFunctions = this.createTaskLambdaFunctions(
+      projectName,
+      environment,
+      eventBus.eventBusName,
+      taskFiles,
+      props.config
+    );
+    for (const taskFunction of taskFunctions) {
+      this.grantLambdaPermissions(eventBus, ssmParameterPrefix, taskFunction);
+    }
   }
 
   private createEventBus(): IEventBus {
@@ -115,16 +138,16 @@ export class AppStack extends Stack {
 
   private discoverLambdaFiles(lambdasDir: string): Array<RestApiLambdaFile> {
     const files: Array<{ route: string; method: string; path: string }> = [];
+    const apiDir = join(lambdasDir, 'api');
+
+    if (!existsSync(apiDir)) {
+      return files;
+    }
 
     const scanDirectory = (dir: string, basePath: string = '') => {
       const items = readdirSync(dir, { withFileTypes: true });
 
       for (const item of items) {
-        // Skip the subscribers directory
-        if (item.name === 'subscribers') {
-          continue;
-        }
-
         const fullPath = join(dir, item.name);
         const routePath = join(basePath, item.name);
 
@@ -140,15 +163,15 @@ export class AppStack extends Stack {
             const fullRoute = '/' + normalizedRoutePath.replace(/\\/g, '/');
             const { route, method } = this.extractRouteAndMethod(fullRoute);
             files.push({ route, method, path: fullPath });
+          } else {
+            // Continue scanning subdirectories
+            scanDirectory(fullPath, routePath);
           }
-
-          // Continue scanning subdirectories
-          scanDirectory(fullPath, routePath);
         }
       }
     };
 
-    scanDirectory(lambdasDir);
+    scanDirectory(apiDir);
     return files;
   }
 
@@ -181,6 +204,38 @@ export class AppStack extends Stack {
     };
 
     scanDirectory(subscribersDir);
+    return files;
+  }
+
+  private discoverTaskFiles(lambdasDir: string): Array<TaskFile> {
+    const files: Array<TaskFile> = [];
+    const tasksDir = join(lambdasDir, 'tasks');
+
+    if (!existsSync(tasksDir)) {
+      return files;
+    }
+
+    const scanDirectory = (dir: string, basePath: string = '') => {
+      const items = readdirSync(dir, { withFileTypes: true });
+
+      for (const item of items) {
+        const fullPath = join(dir, item.name);
+        const routePath = join(basePath, item.name);
+
+        if (item.isDirectory()) {
+          const indexFile = join(fullPath, 'index.mjs');
+          if (existsSync(indexFile)) {
+            const name = routePath.replace(/\\/g, '/');
+            files.push({ name, path: fullPath });
+          } else {
+            // Continue scanning subdirectories
+            scanDirectory(fullPath, routePath);
+          }
+        }
+      }
+    };
+
+    scanDirectory(tasksDir);
     return files;
   }
 
@@ -273,6 +328,74 @@ export class AppStack extends Stack {
     return functions;
   }
 
+  private createTaskLambdaFunctions(
+    projectName: string,
+    environment: string,
+    eventBusName: string,
+    files: TaskFile[],
+    config: config.Config
+  ) {
+    const functions: IFunction[] = [];
+    for (const { name, path } of files) {
+      // Create task Lambda function
+      let functionProps: FunctionProps = {
+        runtime: Runtime.NODEJS_22_X,
+        handler: 'index.lambdaHandler',
+        code: Code.fromAsset(path),
+        environment: {
+          EVENT_BUS_NAME: eventBusName,
+          LUMO_PROJECT_NAME: projectName.toLowerCase(),
+          LUMO_ENVIRONMENT: environment.toLowerCase(),
+        },
+        timeout: Duration.seconds(
+          config.tasks?.[name]?.timeout || 300 // Default 5 minutes
+        ),
+      };
+
+      // Only attach VPC configuration if NAT Gateways are enabled
+      if (this.networking.hasNatGateways) {
+        functionProps = {
+          ...functionProps,
+          vpc: this.networking.vpc,
+          vpcSubnets: {
+            subnetType: SubnetType.PRIVATE_WITH_EGRESS,
+          },
+        };
+      }
+
+      const taskFunction = new Function(
+        this,
+        this.sanitizeTaskName(name),
+        functionProps
+      );
+
+      // Add to functions array for permission granting
+      functions.push(taskFunction);
+
+      // Create Custom Resource Provider
+      const provider = new Provider(
+        this,
+        `${this.sanitizeTaskName(name)}Provider`,
+        {
+          onEventHandler: taskFunction,
+        }
+      );
+
+      // Create Custom Resource to trigger task execution
+      new CustomResource(this, `${this.sanitizeTaskName(name)}Execution`, {
+        serviceToken: provider.serviceToken,
+        properties: {
+          // Force execution on every deployment by using timestamp
+          deploymentId: Date.now().toString(),
+          taskName: name,
+          config: config.tasks?.[name] || {},
+        },
+      });
+    }
+
+    return functions;
+  }
+
   private grantLambdaPermissions(
     eventBus: IEventBus,
     ssmParameterPrefix: string,
@@ -339,18 +462,9 @@ export class AppStack extends Stack {
 
   private createLambdaId(route: string, method: string): string {
     // Convert route to PascalCase: /users/{id} -> UsersByid
-    const pathParts = route
-      .split('/')
-      .filter(Boolean)
-      .map((part) => {
-        // Remove curly braces and convert to PascalCase
-        const cleaned = part.replace(/[{}]/g, '');
-        return cleaned.charAt(0).toUpperCase() + cleaned.slice(1).toLowerCase();
-      })
-      .join('');
-
-    // Handle root route
-    const pathName = pathParts || 'Root';
+    // Remove leading slash and curly braces, then convert to PascalCase
+    const cleanRoute = route.replace(/^\//, '').replace(/[{}]/g, '');
+    const pathName = cleanRoute ? toPascalCase(cleanRoute) : 'Root';
 
     // Format: Route<PathNamePascalCase><METHOD>
     return `Route${pathName}${method.toUpperCase()}`;
@@ -359,11 +473,14 @@ export class AppStack extends Stack {
   private sanitizeSubscriberName(name: string): string {
     // Convert kebab-case to PascalCase and add Subscriber suffix
     // e.g., "send-welcome-email" -> "SendWelcomeEmailSubscriber"
-    const pascalCase = name
-      .split(/[-_]/)
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join('');
-    return `${pascalCase}Subscriber`;
+    return generateResourceIdentifier(name, 'Subscriber');
+  }
+
+  private sanitizeTaskName(name: string): string {
+    // Convert kebab-case to PascalCase and add Task suffix
+    // e.g., "migrate-db" -> "MigrateDbTask"
+    // e.g., "database/migrate" -> "DatabaseMigrateTask"
+    return generateResourceIdentifier(name, 'Task');
   }
 
   private extractRouteAndMethod(fullRoute: string): {

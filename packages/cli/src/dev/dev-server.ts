@@ -373,7 +373,8 @@ export { handler };
       const externalModules = this.config?.build?.exclude || [];
 
       // Use shared bundler for consistency with deploy
-      await bundleRoute(wrapperPath, outputPath, externalModules);
+      // Note: Dev server doesn't copy assets for individual functions - only for production builds
+      await bundleRoute(wrapperPath, outputPath, externalModules, 'aws', []);
 
       // Clean up wrapper file
       await fs.unlink(wrapperPath);

@@ -18,13 +18,17 @@ export const createAWSEventDispatcher = (): EventDispatcher => {
         '@aws-sdk/client-eventbridge'
       );
 
+      // Get the application environment
+      const projectName = process.env.LUMO_PROJECT_NAME;
+      const environment = process.env.LUMO_ENVIRONMENT;
+
       const eventBridgeClient = new EventBridgeClient({});
 
       await eventBridgeClient.send(
         new PutEventsCommand({
           Entries: [
             {
-              Source: 'lumo',
+              Source: `${projectName}/${environment}`,
               DetailType: type,
               Detail: JSON.stringify(data),
               EventBusName: process.env.EVENT_BUS_NAME,

@@ -3,6 +3,7 @@ import {
   expandRoutesToMethods,
   scanRoutes,
   scanSubscribers,
+  scanTasks,
 } from '../project/route-scanner.js';
 import { bundleRoute } from '../project/bundler.js';
 import { loadConfig, type config } from '@lumo-framework/core';
@@ -27,10 +28,14 @@ export const buildCommand: CommandModule = {
       // Scan for subscriber files
       const subscribers = await scanSubscribers();
 
+      // Scan for task files
+      const tasks = await scanTasks();
+
       // Show summary
       log.heading('Build Summary');
       log.info(`Routes: ${methodRoutes.length}`);
       log.info(`Subscribers: ${subscribers.length}`);
+      log.info(`Tasks: ${tasks.length}`);
       console.log();
 
       // Clean and create dist directory
@@ -38,13 +43,16 @@ export const buildCommand: CommandModule = {
       await fs.rm('dist', { recursive: true, force: true });
       await fs.mkdir('dist', { recursive: true });
       await fs.mkdir('dist/functions', { recursive: true });
+      await fs.mkdir('dist/functions/api', { recursive: true });
       await fs.mkdir('dist/functions/subscribers', { recursive: true });
+      await fs.mkdir('dist/functions/tasks', { recursive: true });
 
       // Get external modules from config
       const externalModules = config.build?.exclude || [];
 
       // Build all functions in parallel
-      const totalFunctions = methodRoutes.length + subscribers.length;
+      const totalFunctions =
+        methodRoutes.length + subscribers.length + tasks.length;
       if (totalFunctions > 0) {
         console.log();
         log.heading(`Building ${totalFunctions} Functions`);
@@ -88,6 +96,14 @@ export const buildCommand: CommandModule = {
           );
         });
 
+        // Add task build tasks
+        tasks.forEach((task) => {
+          const { file, name } = task;
+          buildTasks.push(
+            buildFunction('task', name, file, 'run', externalModules, config)
+          );
+        });
+
         // Execute all builds in parallel with progress tracking
         await log.spinner(
           `Building ${totalFunctions} functions...`,
@@ -100,7 +116,7 @@ export const buildCommand: CommandModule = {
       console.log();
       log.success('Build completed successfully!');
       log.info(
-        `Generated ${methodRoutes.length + subscribers.length} functions in dist/functions/`
+        `Generated ${methodRoutes.length + subscribers.length + tasks.length} functions in dist/functions/`
       );
       console.log();
     } catch (error) {
@@ -114,7 +130,7 @@ export const buildCommand: CommandModule = {
 };
 
 async function buildFunction(
-  type: 'route' | 'subscriber',
+  type: 'route' | 'subscriber' | 'task',
   name: string,
   file: string,
   method: string,
@@ -125,18 +141,34 @@ async function buildFunction(
   const wrapperPath =
     type === 'route'
       ? await generateRouteWrapper(file, method, config.provider)
-      : await generateSubscriberWrapper(file, config.provider);
+      : type === 'subscriber'
+        ? await generateSubscriberWrapper(file, config.provider)
+        : await generateTaskWrapper(file, config.provider);
 
   // Create directory for this function
   const functionDir =
     type === 'route'
-      ? `dist/functions${name}`
-      : `dist/functions/subscribers/${name}`;
+      ? `dist/functions/api${name}`
+      : type === 'subscriber'
+        ? `dist/functions/subscribers/${name}`
+        : `dist/functions/tasks/${name}`;
   await fs.mkdir(functionDir, { recursive: true });
+
+  // Get function-specific copyAssets
+  let copyAssets: Array<{ from: string; to?: string }> = [];
+  if (type === 'task' && config.tasks?.[name]?.copyAssets) {
+    copyAssets = config.tasks[name].copyAssets;
+  }
 
   // Bundle the wrapper
   const bundlePath = `${functionDir}/index.js`;
-  await bundleRoute(wrapperPath, bundlePath, externalModules, config.provider);
+  await bundleRoute(
+    wrapperPath,
+    bundlePath,
+    externalModules,
+    config.provider,
+    copyAssets
+  );
 
   // Clean up temporary wrapper
   await fs.unlink(wrapperPath);
@@ -152,10 +184,12 @@ async function generateRouteWrapper(
   if (provider === 'aws') {
     wrapperContent = `
 import { initializeSecretResolver } from '@lumo-framework/adapter-aws/secret-resolver';
+import { initializeAWSEventDispatcher } from '@lumo-framework/adapter-aws/event-dispatcher';
 import { lambdaAdapter } from '@lumo-framework/adapter-aws';
 import {${method} as handler} from '${path.resolve(routeFile)}';
 
 initializeSecretResolver();
+initializeAWSEventDispatcher();
 export const lambdaHandler = lambdaAdapter(handler);
 `;
   } else if (provider === 'cloudflare') {
@@ -193,10 +227,12 @@ async function generateSubscriberWrapper(
   if (provider === 'aws') {
     wrapperContent = `
 import { initializeSecretResolver } from '@lumo-framework/adapter-aws/secret-resolver';
+import { initializeAWSEventDispatcher } from '@lumo-framework/adapter-aws/event-dispatcher';
 import { subscriberAdapter } from '@lumo-framework/adapter-aws';
 import {listen} from '${path.resolve(subscriberFile)}';
 
 initializeSecretResolver();
+initializeAWSEventDispatcher();
 export const lambdaHandler = subscriberAdapter(listen);
 `;
   } else if (provider === 'cloudflare') {
@@ -221,6 +257,37 @@ export default {
   const timestamp = Date.now();
   const random = Math.random().toString(36).substring(2, 8);
   const wrapperPath = `dist/temp-${path.basename(subscriberFile, '.ts')}-subscriber-${timestamp}-${random}-wrapper.ts`;
+  await fs.writeFile(wrapperPath, wrapperContent);
+  return wrapperPath;
+}
+
+async function generateTaskWrapper(
+  taskFile: string,
+  provider: string
+): Promise<string> {
+  let wrapperContent: string;
+
+  if (provider === 'aws') {
+    wrapperContent = `
+import { initializeSecretResolver } from '@lumo-framework/adapter-aws/secret-resolver';
+import { initializeAWSEventDispatcher } from '@lumo-framework/adapter-aws/event-dispatcher';
+import { taskAdapter } from '@lumo-framework/adapter-aws';
+import {run} from '${path.resolve(taskFile)}';
+
+initializeSecretResolver();
+initializeAWSEventDispatcher();
+export const lambdaHandler = taskAdapter(run);
+`;
+  } else if (provider === 'cloudflare') {
+    // For now, tasks are AWS-only, but we could add Cloudflare support later
+    throw new Error(`Tasks are not yet supported for provider: ${provider}`);
+  } else {
+    throw new Error(`Unsupported provider: ${provider}`);
+  }
+
+  const timestamp = Date.now();
+  const random = Math.random().toString(36).substring(2, 8);
+  const wrapperPath = `dist/temp-${path.basename(taskFile, '.ts')}-task-${timestamp}-${random}-wrapper.ts`;
   await fs.writeFile(wrapperPath, wrapperContent);
   return wrapperPath;
 }

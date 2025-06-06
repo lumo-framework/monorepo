@@ -6,8 +6,19 @@ const networkingSchema = z.object({
   natGateways: z.number().min(0).max(3).default(0), // 0=no egress, 1=cost-effective, 2-3=high availability
 });
 
+const copyAssetSchema = z.object({
+  from: z.string(),
+  to: z.string().optional(),
+});
+
 const buildSchema = z.object({
   exclude: z.array(z.string()).optional(),
+});
+
+const taskSchema = z.object({
+  timeout: z.number().default(300), // 5 minutes default
+  runOn: z.array(z.enum(['deploy', 'update'])).default(['deploy', 'update']),
+  copyAssets: z.array(copyAssetSchema).optional(),
 });
 
 export const configSchema = z.object({
@@ -38,6 +49,7 @@ export const configSchema = z.object({
         .optional(),
     })
     .optional(),
+  tasks: z.record(taskSchema).optional(),
 });
 
 export type Config = z.infer<typeof configSchema>;

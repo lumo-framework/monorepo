@@ -24,6 +24,13 @@ type SubscriberInfo = {
   exports: string[];
 };
 
+type TaskInfo = {
+  file: string;
+  name: string;
+  hasRunExport: boolean;
+  exports: string[];
+};
+
 export async function scanRoutes(): Promise<RouteInfo[]> {
   const searchPatterns = ['functions/api/**/*.ts'];
 
@@ -114,6 +121,41 @@ export async function scanSubscribers(): Promise<SubscriberInfo[]> {
   }
 
   return subscribers;
+}
+
+export async function scanTasks(): Promise<TaskInfo[]> {
+  const searchPatterns = ['functions/tasks/**/*.ts'];
+
+  const allFiles: string[] = [];
+  for (const pattern of searchPatterns) {
+    try {
+      const files = await glob(pattern);
+      allFiles.push(...files);
+    } catch {
+      // Pattern might not exist, continue
+    }
+  }
+
+  if (allFiles.length === 0) {
+    return [];
+  }
+
+  const project = new Project();
+  const tasks: TaskInfo[] = [];
+
+  for (const file of allFiles) {
+    try {
+      const sourceFile = project.addSourceFileAtPath(file);
+      const taskInfo = analyzeTaskFile(sourceFile, file);
+      if (taskInfo) {
+        tasks.push(taskInfo);
+      }
+    } catch {
+      console.warn(`Failed to analyze ${file}`);
+    }
+  }
+
+  return tasks;
 }
 
 export function expandRoutesToMethods(routes: RouteInfo[]): MethodRoute[] {
@@ -329,6 +371,45 @@ function analyzeSubscriberFile(
     file: filePath,
     name: subscriberName,
     hasDefaultExport,
+    exports: exportNames,
+  };
+}
+
+function analyzeTaskFile(
+  sourceFile: SourceFile,
+  filePath: string
+): TaskInfo | null {
+  const exports = sourceFile.getExportedDeclarations();
+
+  // Extract export names
+  const exportNames: string[] = [];
+  let hasRunExport = false;
+
+  exports.forEach((_, name: string) => {
+    exportNames.push(name);
+    if (name === 'run') {
+      hasRunExport = true;
+    }
+  });
+
+  // Skip files with no run export
+  if (!hasRunExport) {
+    return null;
+  }
+
+  // Generate task name from a file path
+  let taskName: string;
+  if (filePath.includes('functions/tasks')) {
+    const relativePath = path.relative('functions/tasks', filePath);
+    taskName = relativePath.replace(/\.ts$/, '').replace(/\\/g, '/');
+  } else {
+    throw new Error(`Unsupported task file path: ${filePath}`);
+  }
+
+  return {
+    file: filePath,
+    name: taskName,
+    hasRunExport,
     exports: exportNames,
   };
 }
