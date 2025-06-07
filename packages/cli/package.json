@@ -1,6 +1,6 @@
 {
   "name": "@lumo-framework/cli",
-  "version": "1.0.0-alpha.1",
+  "version": "1.0.0-alpha.2",
   "description": "Command-line interface for the Lumo Framework TypeScript serverless framework",
   "repository": {
     "type": "git",
