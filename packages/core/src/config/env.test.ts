@@ -1,8 +1,8 @@
 import { describe, test, beforeEach, afterEach } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { fromEnv } from './env.js';
+import { env } from './env.js';
 
-describe('fromEnv', () => {
+describe('env', () => {
   let originalEnv: { [key: string]: string | undefined };
 
   beforeEach(() => {
@@ -16,7 +16,7 @@ describe('fromEnv', () => {
   test('should return environment variable value when it exists', () => {
     process.env.TEST_VAR = 'test-value';
 
-    const result = fromEnv('TEST_VAR');
+    const result = env('TEST_VAR');
 
     assert.strictEqual(result, 'test-value');
   });
@@ -24,7 +24,7 @@ describe('fromEnv', () => {
   test('should return fallback when environment variable is undefined', () => {
     delete process.env.TEST_VAR;
 
-    const result = fromEnv('TEST_VAR', 'fallback-value');
+    const result = env('TEST_VAR', 'fallback-value');
 
     assert.strictEqual(result, 'fallback-value');
   });
@@ -32,7 +32,7 @@ describe('fromEnv', () => {
   test('should return default empty string when no fallback provided and variable is undefined', () => {
     delete process.env.TEST_VAR;
 
-    const result = fromEnv('TEST_VAR');
+    const result = env('TEST_VAR');
 
     assert.strictEqual(result, '');
   });
@@ -40,7 +40,7 @@ describe('fromEnv', () => {
   test('should return fallback when environment variable is empty string', () => {
     process.env.TEST_VAR = '';
 
-    const result = fromEnv('TEST_VAR', 'fallback-value');
+    const result = env('TEST_VAR', 'fallback-value');
 
     assert.strictEqual(result, 'fallback-value');
   });
@@ -48,7 +48,7 @@ describe('fromEnv', () => {
   test('should return environment variable when it has whitespace', () => {
     process.env.TEST_VAR = '  spaced value  ';
 
-    const result = fromEnv('TEST_VAR', 'fallback-value');
+    const result = env('TEST_VAR', 'fallback-value');
 
     assert.strictEqual(result, '  spaced value  ');
   });
@@ -56,7 +56,7 @@ describe('fromEnv', () => {
   test('should return environment variable when it is "0"', () => {
     process.env.TEST_VAR = '0';
 
-    const result = fromEnv('TEST_VAR', 'fallback-value');
+    const result = env('TEST_VAR', 'fallback-value');
 
     assert.strictEqual(result, '0');
   });
@@ -64,7 +64,7 @@ describe('fromEnv', () => {
   test('should return environment variable when it is "false"', () => {
     process.env.TEST_VAR = 'false';
 
-    const result = fromEnv('TEST_VAR', 'fallback-value');
+    const result = env('TEST_VAR', 'fallback-value');
 
     assert.strictEqual(result, 'false');
   });
@@ -72,7 +72,7 @@ describe('fromEnv', () => {
   test('should handle complex environment variable names', () => {
     process.env['COMPLEX_VAR_NAME_123'] = 'complex-value';
 
-    const result = fromEnv('COMPLEX_VAR_NAME_123', 'fallback');
+    const result = env('COMPLEX_VAR_NAME_123', 'fallback');
 
     assert.strictEqual(result, 'complex-value');
   });
