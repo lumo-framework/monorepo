@@ -789,14 +789,24 @@ function runWranglerWithInput(
 }
 
 function extractMethodFromRoute(routeName: string): string {
-  const parts = routeName.split('-');
+  // Strip api/ prefix if it exists
+  const nameWithoutApiPrefix = routeName.startsWith('api/')
+    ? routeName.substring(4)
+    : routeName;
+
+  const parts = nameWithoutApiPrefix.split('-');
   return parts[parts.length - 1]?.toUpperCase() || 'GET';
 }
 
 function convertRouteToPath(routeName: string): string {
+  // Strip api/ prefix if it exists
+  const nameWithoutApiPrefix = routeName.startsWith('api/')
+    ? routeName.substring(4)
+    : routeName;
+
   // Convert route name like "users/route-get" to "/users"
   // This should match the logic in extractRouteInfo
-  const parts = routeName.split('-');
+  const parts = nameWithoutApiPrefix.split('-');
   parts.pop(); // Remove method (e.g., "get", "post")
 
   // Join the remaining parts back together
